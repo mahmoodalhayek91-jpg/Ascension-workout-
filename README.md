@@ -2,6 +2,15 @@
 
 An original RPG-inspired progressive workout tracker built as an installable iPhone web app.
 
+## Progression
+
+- Six strength quests rotate from A through F after completion.
+- Each quest automatically prescribes three sets, reps or time, and a suggested weight where relevant.
+- Confirming all sets awards 100 XP.
+- The Recovery Walk starts at 10 minutes, gains 5 minutes every 10 levels, and caps at 45 minutes.
+- Recovery can be confirmed once per day for 20 XP.
+- Twenty-eight achievements track strength quests, levels, streaks, and recovery walks.
+
 ## Use
 
 1. Open the deployed link in Safari on iPhone.
