@@ -10,6 +10,7 @@ An original RPG-inspired progressive workout tracker built as an installable iPh
 - The Recovery Walk starts at 10 minutes, gains 5 minutes every 10 levels, and caps at 45 minutes.
 - Recovery can be confirmed once per day for 20 XP.
 - Twenty-eight achievements track strength quests, levels, streaks, and recovery walks.
+- Settings lets each user switch between Home equipment (dumbbells, barbell, bench and bodyweight) and a fully equipped Gym program.
 
 ## Use
 
