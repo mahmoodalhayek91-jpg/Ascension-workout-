@@ -11,10 +11,13 @@ An original RPG-inspired progressive workout tracker built as an installable iPh
 - Confirming all sets awards 100 XP.
 - The Recovery Walk starts at 10 minutes, gains 5 minutes every 10 levels, and caps at 45 minutes.
 - Recovery can be confirmed once per day for 20 XP.
-- Twenty-eight achievements track strength quests, levels, streaks, and recovery walks.
+- Thirty-three achievements track strength quests, levels, streaks, recovery walks, and Weekly Boss victories.
 - Settings lets each user switch between Home equipment (dumbbells, barbell, bench and bodyweight) and a fully equipped Gym program.
 - New users receive a Hunter setup screen; every level and newly unlocked achievement receives a celebration.
 - Optional synthesized quest sounds can be enabled in Settings.
+- A rotating Weekly Boss tracks activity from Monday through Sunday and awards 300 bonus XP once defeated.
+- Every workout exercise includes offline setup, movement, form-cue, and common-mistake guidance.
+- Twelve interface themes unlock progressively from Level 1 through Level 100.
 
 ## Use
 
