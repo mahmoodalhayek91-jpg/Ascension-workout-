@@ -95,7 +95,7 @@ const equipmentModes = {
 };
 function activeRoutines(){ return equipmentModes[state.equipmentMode].routines; }
 
-const initial = { name: 'Mahmoud', xp: 0, streak: 0, lastWorkout: null, workoutCount: 0, routine: 'A', equipmentMode: 'home', history: [], bests: {}, draft: null, recoveryDate: null, recoveryCount: 0 };
+const initial = { name: '', xp: 0, streak: 0, lastWorkout: null, workoutCount: 0, routine: 'A', equipmentMode: 'home', history: [], bests: {}, draft: null, recoveryDate: null, recoveryCount: 0 };
 let state = load();
 let page = 'home';
 
@@ -103,6 +103,7 @@ function load() {
   try {
     const stored = JSON.parse(localStorage.getItem('ascension-state') || '{}');
     const merged = { ...initial, ...stored };
+    if (merged.name === 'Mahmoud') merged.name = '';
     if (!routineOrder.includes(merged.routine)) merged.routine = 'A';
     if (!equipmentModes[merged.equipmentMode]) merged.equipmentMode = 'home';
     if (merged.draft && !merged.draft.version) merged.draft = null;
@@ -136,7 +137,7 @@ function home(){
   const next = state.routine;
   const current = activeRoutines();
   const recoveryDone = state.recoveryDate === localDay();
-  return shell(`<section class="hero"><div class="profile-row"><div class="level-medal"><div><span>LEVEL</span><b>${level()}</b></div></div><div class="profile-copy"><h1>${esc(state.name)}</h1><div class="rank">Current rank · <strong>${rank()}</strong></div></div></div><div class="xp-line"><span>LEVEL PROGRESS</span><span>${levelXp()} / 200 XP</span></div><div class="xp-track"><div class="xp-fill" style="width:${levelXp()/2}%"></div></div><div class="stats"><div class="stat"><b>${state.streak}</b><span>Streak</span></div><div class="stat"><b>${state.workoutCount}</b><span>Quests</span></div><div class="stat"><b>${Object.keys(state.bests).length}</b><span>Records</span></div></div></section>
+  return shell(`<section class="hero"><div class="profile-row"><div class="level-medal"><div><span>LEVEL</span><b>${level()}</b></div></div><div class="profile-copy"><h1>${esc(state.name || 'Hunter')}</h1><div class="rank">Current rank · <strong>${rank()}</strong></div></div></div><div class="xp-line"><span>LEVEL PROGRESS</span><span>${levelXp()} / 200 XP</span></div><div class="xp-track"><div class="xp-fill" style="width:${levelXp()/2}%"></div></div><div class="stats"><div class="stat"><b>${state.streak}</b><span>Streak</span></div><div class="stat"><b>${state.workoutCount}</b><span>Quests</span></div><div class="stat"><b>${Object.keys(state.bests).length}</b><span>Records</span></div></div></section>
   <div class="section-head"><h2>Daily quests</h2><span>${new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</span></div>
   <div class="mode-chip">⌂ ${equipmentModes[state.equipmentMode].label} program</div>
   <article class="quest"><div class="quest-icon">⚔</div><div class="quest-body"><h3>Strength Quest ${next} · ${current[next].title}</h3><p>${current[next].exercises.map(x=>x.name).slice(0,3).join(' · ')}</p></div><div class="reward">+100 XP</div></article>
@@ -206,7 +207,7 @@ function progress(){
 }
 function settings(){
   const modes=Object.entries(equipmentModes).map(([id,mode])=>`<button class="mode-option ${state.equipmentMode===id?'active':''}" data-mode="${id}"><b>${mode.label}</b><span>${mode.detail}</span>${state.equipmentMode===id?'<i>✓</i>':''}</button>`).join('');
-  return shell(`<h1 class="page-title">Settings</h1><p class="page-sub">Your data stays in this browser on this device.</p><div class="settings-card"><h3>Hunter profile</h3><div class="field"><label>DISPLAY NAME</label><input id="name" value="${esc(state.name)}" maxlength="24" /></div><button class="primary" data-save-name>SAVE NAME</button></div><div class="settings-card"><h3>Workout equipment</h3><p class="settings-note equipment-help">Choose the equipment available to you. Your next quest updates immediately.</p><div class="mode-grid">${modes}</div></div><div class="settings-card"><h3>Progression rules</h3><p class="settings-note">Strength prescription grows gradually with your level. Recovery Walk gains 5 minutes every 10 levels and stops increasing at 45 minutes.</p></div><div class="settings-card"><h3>Backup</h3><div class="button-row"><button class="secondary" data-export>Export data</button><button class="secondary" data-import>Import data</button></div><input type="file" id="file" accept="application/json" hidden /></div><div class="settings-card"><h3>Start over</h3><button class="secondary danger" data-reset>Reset all progress</button></div>`);
+  return shell(`<h1 class="page-title">Settings</h1><p class="page-sub">Your data stays in this browser on this device.</p><div class="settings-card"><h3>Hunter profile</h3><div class="field"><label>HUNTER NAME</label><input id="name" value="${esc(state.name)}" placeholder="Enter your hunter name" maxlength="24" autocomplete="nickname" /></div><button class="primary" data-save-name>SAVE NAME</button></div><div class="settings-card"><h3>Workout equipment</h3><p class="settings-note equipment-help">Choose the equipment available to you. Your next quest updates immediately.</p><div class="mode-grid">${modes}</div></div><div class="settings-card"><h3>Progression rules</h3><p class="settings-note">Strength prescription grows gradually with your level. Recovery Walk gains 5 minutes every 10 levels and stops increasing at 45 minutes.</p></div><div class="settings-card"><h3>Backup</h3><div class="button-row"><button class="secondary" data-export>Export data</button><button class="secondary" data-import>Import data</button></div><input type="file" id="file" accept="application/json" hidden /></div><div class="settings-card"><h3>Start over</h3><button class="secondary danger" data-reset>Reset all progress</button></div>`);
 }
 function render(){ document.querySelector('#app').innerHTML=page==='home'?home():page==='workout'?workout():page==='progress'?progress():settings(); bind(); }
 function toast(msg){ const el=document.querySelector('#toast'); if(!el)return; el.textContent=msg; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),1800); }
@@ -217,7 +218,7 @@ function bind(){
   document.querySelector('[data-finish]')?.addEventListener('click',finish);
   document.querySelector('[data-recovery]')?.addEventListener('click',completeRecovery);
   document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{state.equipmentMode=b.dataset.mode;state.draft=null;save();render();toast(`${equipmentModes[state.equipmentMode].label} quests selected`)});
-  document.querySelector('[data-save-name]')?.addEventListener('click',()=>{state.name=document.querySelector('#name').value.trim()||'Hunter';save();toast('Profile saved')});
+  document.querySelector('[data-save-name]')?.addEventListener('click',()=>{state.name=document.querySelector('#name').value.trim();save();render();toast(state.name?'Hunter name saved':'Hunter name cleared')});
   document.querySelector('[data-export]')?.addEventListener('click',exportData);
   document.querySelector('[data-import]')?.addEventListener('click',()=>document.querySelector('#file').click());
   document.querySelector('#file')?.addEventListener('change',importData);
@@ -238,5 +239,15 @@ function finish(){
 function exportData(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ascension-backup.json';a.click();URL.revokeObjectURL(a.href);}
 function importData(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{state={...initial,...JSON.parse(r.result),draft:null};if(!routineOrder.includes(state.routine))state.routine='A';if(!equipmentModes[state.equipmentMode])state.equipmentMode='home';save();page='home';render();toast('Backup restored')}catch{alert('That backup file could not be read.')}};r.readAsText(f);}
 
+function showWelcome(){
+  const welcome=document.createElement('div');
+  welcome.className='welcome-screen';
+  welcome.innerHTML=`<div class="welcome-sigil"><span>✦</span></div><p>ASCENSION PROTOCOL</p><h1>Welcome, <strong>${esc(state.name || 'Hunter')}</strong></h1><div class="welcome-line"></div><span class="welcome-sub">Your next quest awaits</span>`;
+  document.body.appendChild(welcome);
+  requestAnimationFrame(()=>welcome.classList.add('visible'));
+  setTimeout(()=>{welcome.classList.add('departing');setTimeout(()=>welcome.remove(),650)},1800);
+}
+
 render();
+showWelcome();
 if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'));
