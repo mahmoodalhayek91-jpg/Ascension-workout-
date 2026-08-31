@@ -18,6 +18,7 @@ An original RPG-inspired progressive workout tracker built as an installable iPh
 - A rotating Weekly Boss tracks activity from Monday through Sunday and awards 300 bonus XP once defeated.
 - Every workout exercise includes offline setup, movement, form-cue, and common-mistake guidance.
 - Twelve interface themes unlock progressively from Level 1 through Level 100.
+- Hunter titles advance automatically at level milestones and appear on the opening screen and profile.
 
 ## Use
 

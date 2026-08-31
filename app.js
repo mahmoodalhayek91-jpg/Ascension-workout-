@@ -112,6 +112,11 @@ const themeModes = {
   sovereign: { label:'Sovereign', level:90, colors:['#d596ff','#ffe5ff'] },
   eternal: { label:'Eternal', level:100, colors:['#ffffff','#ffd56f'] }
 };
+const titleMilestones = [
+  [1,'The Awakened'],[5,'Rising Vanguard'],[10,'Iron Hunter'],[20,'Elite Slayer'],
+  [30,'Limit Breaker'],[40,'Realm Walker'],[50,'The Ascendant'],[60,'Stormforged'],
+  [70,'Abyss Walker'],[80,'Mythic Hunter'],[90,'The Sovereign'],[100,'Eternal Hunter']
+];
 function activeRoutines(){ return equipmentModes[state.equipmentMode].routines; }
 
 const initial = { name: '', xp: 0, streak: 0, lastWorkout: null, workoutCount: 0, routine: 'A', equipmentMode: 'home', difficulty: 'beginner', theme: 'shadow', soundEnabled: false, onboardingComplete: false, history: [], bests: {}, draft: null, recoveryDate: null, recoveryCount: 0, bossClaims:{}, bossWins:0 };
@@ -145,6 +150,7 @@ function levelForXp(xp){ return Math.floor((Number(xp)||0) / 200) + 1; }
 function level(){ return Math.floor(state.xp / 200) + 1; }
 function levelXp(){ return state.xp % 200; }
 function rank(){ const l=level(); return l>=20?'Ascendant':l>=15?'Apex':l>=10?'Elite':l>=5?'Vanguard':'Initiate'; }
+function titleForLevel(value=level()){return titleMilestones.reduce((title,[required,name])=>value>=required?name:title,'The Awakened');}
 function localDay(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 function recoveryMinutes(){ return Math.min(45, 10 + Math.floor(level()/10)*5); }
 function repTarget(ex){
@@ -196,7 +202,7 @@ function home(){
   const current = activeRoutines();
   const recoveryDone = state.recoveryDate === localDay();
   const boss=currentBoss();
-  return shell(`<section class="hero"><div class="profile-row"><div class="level-medal"><div><span>LEVEL</span><b>${level()}</b></div></div><div class="profile-copy"><h1>${esc(state.name || 'Hunter')}</h1><div class="rank">Current rank · <strong>${rank()}</strong></div></div></div><div class="xp-line"><span>LEVEL PROGRESS</span><span>${levelXp()} / 200 XP</span></div><div class="xp-track"><div class="xp-fill" style="width:${levelXp()/2}%"></div></div><div class="stats"><div class="stat"><b>${state.streak}</b><span>Streak</span></div><div class="stat"><b>${state.workoutCount}</b><span>Quests</span></div><div class="stat"><b>${Object.keys(state.bests).length}</b><span>Records</span></div></div></section>
+  return shell(`<section class="hero"><div class="profile-row"><div class="level-medal"><div><span>LEVEL</span><b>${level()}</b></div></div><div class="profile-copy"><h1>${esc(state.name || 'Hunter')}</h1><div class="hunter-title">${esc(titleForLevel())}</div><div class="rank">Current rank · <strong>${rank()}</strong></div></div></div><div class="xp-line"><span>LEVEL PROGRESS</span><span>${levelXp()} / 200 XP</span></div><div class="xp-track"><div class="xp-fill" style="width:${levelXp()/2}%"></div></div><div class="stats"><div class="stat"><b>${state.streak}</b><span>Streak</span></div><div class="stat"><b>${state.workoutCount}</b><span>Quests</span></div><div class="stat"><b>${Object.keys(state.bests).length}</b><span>Records</span></div></div></section>
   <div class="section-head"><h2>Daily quests</h2><span>${new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</span></div>
   <div class="mode-chip">⌂ ${equipmentModes[state.equipmentMode].label} · ${difficultyModes[state.difficulty].label}</div>
   <article class="quest"><div class="quest-icon">⚔</div><div class="quest-body"><h3>Strength Quest ${next} · ${current[next].title}</h3><p>${current[next].exercises.map(x=>x.name).slice(0,3).join(' · ')}</p></div><div class="reward">+100 XP</div></article>
@@ -329,7 +335,10 @@ function unlockedAchievements(){
 function unlockedThemes(){return Object.entries(themeModes).filter(([,theme])=>level()>=theme.level).map(([id,theme])=>({id,...theme}));}
 function progressSnapshot(){ return { level:level(), achievements:new Set(unlockedAchievements().map(item=>item.name)), themes:new Set(unlockedThemes().map(theme=>theme.id)) }; }
 function queueProgressRewards(before){
-  for(let reached=before.level+1;reached<=level();reached++) celebrationQueue.push({type:'level',icon:'✦',title:'LEVEL INCREASED',name:`Level ${reached}`,description:`Your rank is now ${rank()}. The next quest awaits.`});
+  for(let reached=before.level+1;reached<=level();reached++){
+    const newTitle=titleForLevel(reached);const titleChanged=newTitle!==titleForLevel(reached-1);
+    celebrationQueue.push({type:'level',icon:'✦',title:'LEVEL INCREASED',name:`Level ${reached}`,description:titleChanged?`New title acquired — ${newTitle}.`:`Current title — ${newTitle}. The next quest awaits.`});
+  }
   unlockedAchievements().filter(item=>!before.achievements.has(item.name)).forEach(item=>celebrationQueue.push({type:'achievement',icon:item.icon,title:'ACHIEVEMENT UNLOCKED',name:item.name,description:item.description}));
   unlockedThemes().filter(theme=>!before.themes.has(theme.id)).forEach(theme=>celebrationQueue.push({type:'theme',icon:'◈',title:'THEME UNLOCKED',name:theme.label,description:`The ${theme.label} interface theme is now available in Settings.`}));
   showNextCelebration();
@@ -434,7 +443,7 @@ function showOnboarding(){
 function showWelcome(){
   const welcome=document.createElement('div');
   welcome.className='welcome-screen';
-  welcome.innerHTML=`<div class="welcome-sigil"><span>✦</span></div><p>ASCENSION PROTOCOL</p><h1>Welcome, <strong>${esc(state.name || 'Hunter')}</strong></h1><div class="welcome-line"></div><span class="welcome-sub">Your next quest awaits</span>`;
+  welcome.innerHTML=`<div class="welcome-sigil"><span>✦</span></div><p>ASCENSION PROTOCOL</p><h1>Welcome, <strong>${esc(state.name || 'Hunter')}</strong></h1><div class="welcome-title">${esc(titleForLevel())}</div><div class="welcome-line"></div><span class="welcome-sub">Your next quest awaits</span>`;
   document.body.appendChild(welcome);
   requestAnimationFrame(()=>welcome.classList.add('visible'));
   setTimeout(()=>{welcome.classList.add('departing');setTimeout(()=>{welcome.remove();showOnboarding()},650)},1800);
