@@ -15,10 +15,13 @@ An original RPG-inspired progressive workout tracker built as an installable iPh
 - Settings lets each user switch between Home equipment (dumbbells, barbell, bench and bodyweight) and a fully equipped Gym program.
 - New users receive a Hunter setup screen; every level and newly unlocked achievement receives a celebration.
 - Optional synthesized quest sounds can be enabled in Settings.
-- A rotating Weekly Boss tracks activity from Monday through Sunday and awards 300 bonus XP once defeated.
+- A rotating Weekly Boss tracks activity from Monday through Sunday and awards 200 bonus XP once defeated.
 - Every workout exercise includes offline setup, movement, form-cue, and common-mistake guidance.
 - Twelve interface themes unlock progressively from Level 1 through Level 100.
 - Hunter titles advance automatically at level milestones and appear on the opening screen and profile.
+- One optional Daily Side Quest rotates each day and awards 15 XP.
+- The Hunter emblem evolves visually at Levels 1, 10, 25, 50, 75 and 100.
+- New users receive a five-page tutorial that can be replayed later from Settings.
 
 ## Use
 

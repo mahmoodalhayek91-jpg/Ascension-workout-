@@ -117,9 +117,17 @@ const titleMilestones = [
   [30,'Limit Breaker'],[40,'Realm Walker'],[50,'The Ascendant'],[60,'Stormforged'],
   [70,'Abyss Walker'],[80,'Mythic Hunter'],[90,'The Sovereign'],[100,'Eternal Hunter']
 ];
+const emblemStages = [
+  {id:'awakened',level:1,name:'Awakened Mark',glyph:'◇'},
+  {id:'vanguard',level:10,name:'Vanguard Crest',glyph:'⬡'},
+  {id:'elite',level:25,name:'Elite Sigil',glyph:'✦'},
+  {id:'ascendant',level:50,name:'Ascendant Seal',glyph:'✧'},
+  {id:'mythic',level:75,name:'Mythic Emblem',glyph:'✹'},
+  {id:'eternal',level:100,name:'Eternal Insignia',glyph:'◈'}
+];
 function activeRoutines(){ return equipmentModes[state.equipmentMode].routines; }
 
-const initial = { name: '', xp: 0, streak: 0, lastWorkout: null, workoutCount: 0, routine: 'A', equipmentMode: 'home', difficulty: 'beginner', theme: 'shadow', soundEnabled: false, onboardingComplete: false, history: [], bests: {}, draft: null, recoveryDate: null, recoveryCount: 0, bossClaims:{}, bossWins:0 };
+const initial = { name: '', xp: 0, streak: 0, lastWorkout: null, workoutCount: 0, routine: 'A', equipmentMode: 'home', difficulty: 'beginner', theme: 'shadow', soundEnabled: false, onboardingComplete: false, tutorialComplete:false, history: [], bests: {}, draft: null, recoveryDate: null, recoveryCount: 0, sideQuestDate:null, sideQuestCount:0, bossClaims:{}, bossWins:0 };
 let state = load();
 let page = 'home';
 let swapOpen = null;
@@ -140,6 +148,7 @@ function load() {
     if (!merged.bossClaims || typeof merged.bossClaims!=='object') merged.bossClaims={};
     if (!Number.isFinite(merged.bossWins)) merged.bossWins=0;
     if (stored.onboardingComplete === undefined) merged.onboardingComplete = Boolean(raw);
+    if (stored.tutorialComplete === undefined) merged.tutorialComplete = Boolean(raw);
     if (merged.draft && !merged.draft.version) merged.draft = null;
     if (stored.recoveryCount === undefined && merged.recoveryDate) merged.recoveryCount = 1;
     return merged;
@@ -151,8 +160,22 @@ function level(){ return Math.floor(state.xp / 200) + 1; }
 function levelXp(){ return state.xp % 200; }
 function rank(){ const l=level(); return l>=20?'Ascendant':l>=15?'Apex':l>=10?'Elite':l>=5?'Vanguard':'Initiate'; }
 function titleForLevel(value=level()){return titleMilestones.reduce((title,[required,name])=>value>=required?name:title,'The Awakened');}
+function emblemForLevel(value=level()){return emblemStages.reduce((emblem,stage)=>value>=stage.level?stage:emblem,emblemStages[0]);}
 function localDay(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 function recoveryMinutes(){ return Math.min(45, 10 + Math.floor(level()/10)*5); }
+function dailySideQuest(){
+  const tasks=[
+    {icon:'◌',name:'Mobility Flow',description:'Move gently through five minutes of comfortable mobility.'},
+    {icon:'⌁',name:'Posture Reset',description:'Spend three minutes opening the chest and moving the upper back.'},
+    {icon:'◇',name:'Bodyweight Primer',description:'Complete 10 slow bodyweight squats through a comfortable range.'},
+    {icon:'◎',name:'Core Control',description:'Complete 6 controlled dead bugs on each side.'},
+    {icon:'☾',name:'Flexibility Check',description:'Spend three minutes stretching without forcing the range.'},
+    {icon:'◈',name:'Breathing Reset',description:'Practise three minutes of slow, relaxed breathing.'},
+    state.equipmentMode==='gym'?{icon:'△',name:'Easy Cardio Primer',description:'Move easily on a treadmill or bike for five minutes.'}:{icon:'△',name:'Movement Break',description:'Walk or march comfortably for five minutes.'}
+  ];
+  const [year,month,day]=localDay().split('-').map(Number);const index=Math.floor(Date.UTC(year,month-1,day)/86400000)%tasks.length;
+  return tasks[index];
+}
 function repTarget(ex){
   const base = ex.reps || Math.min(12, 8 + Math.floor(level()/5));
   return Math.max(6, Math.min(15, base + difficultyModes[state.difficulty].reps));
@@ -201,15 +224,20 @@ function home(){
   const next = state.routine;
   const current = activeRoutines();
   const recoveryDone = state.recoveryDate === localDay();
+  const sideQuestDone = state.sideQuestDate === localDay();
+  const sideQuest = dailySideQuest();
+  const emblem=emblemForLevel();
   const boss=currentBoss();
-  return shell(`<section class="hero"><div class="profile-row"><div class="level-medal"><div><span>LEVEL</span><b>${level()}</b></div></div><div class="profile-copy"><h1>${esc(state.name || 'Hunter')}</h1><div class="hunter-title">${esc(titleForLevel())}</div><div class="rank">Current rank · <strong>${rank()}</strong></div></div></div><div class="xp-line"><span>LEVEL PROGRESS</span><span>${levelXp()} / 200 XP</span></div><div class="xp-track"><div class="xp-fill" style="width:${levelXp()/2}%"></div></div><div class="stats"><div class="stat"><b>${state.streak}</b><span>Streak</span></div><div class="stat"><b>${state.workoutCount}</b><span>Quests</span></div><div class="stat"><b>${Object.keys(state.bests).length}</b><span>Records</span></div></div></section>
+  return shell(`<section class="hero"><div class="profile-row"><div class="level-medal emblem-${emblem.id}" title="${emblem.name}"><i>${emblem.glyph}</i><div><span>LEVEL</span><b>${level()}</b></div></div><div class="profile-copy"><h1>${esc(state.name || 'Hunter')}</h1><div class="hunter-title">${esc(titleForLevel())}</div><div class="rank">Current rank · <strong>${rank()}</strong></div></div></div><div class="xp-line"><span>LEVEL PROGRESS</span><span>${levelXp()} / 200 XP</span></div><div class="xp-track"><div class="xp-fill" style="width:${levelXp()/2}%"></div></div><div class="stats"><div class="stat"><b>${state.streak}</b><span>Streak</span></div><div class="stat"><b>${state.workoutCount}</b><span>Quests</span></div><div class="stat"><b>${Object.keys(state.bests).length}</b><span>Records</span></div></div></section>
   <div class="section-head"><h2>Daily quests</h2><span>${new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</span></div>
   <div class="mode-chip">⌂ ${equipmentModes[state.equipmentMode].label} · ${difficultyModes[state.difficulty].label}</div>
   <article class="quest"><div class="quest-icon">⚔</div><div class="quest-body"><h3>Strength Quest ${next} · ${current[next].title}</h3><p>${current[next].exercises.map(x=>x.name).slice(0,3).join(' · ')}</p></div><div class="reward">+100 XP</div></article>
   <button class="primary" data-start>BEGIN STRENGTH QUEST</button>
   <article class="quest recovery-quest"><div class="quest-icon">◌</div><div class="quest-body"><h3>Recovery Walk · ${recoveryMinutes()} minutes</h3><p>Comfortable pace · increases every 10 levels</p></div><div class="reward">+20 XP</div></article>
   <button class="secondary ${recoveryDone?'completed':''}" data-recovery ${recoveryDone?'disabled':''}>${recoveryDone?'✓ RECOVERY COMPLETE TODAY':'CONFIRM RECOVERY WALK'}</button>
-  <div class="section-head"><h2>Weekly Boss</h2><span>Resets Monday</span></div><article class="boss-card ${boss.complete?'complete':''}"><div class="boss-icon">${boss.icon}</div><div class="boss-copy"><div class="boss-label">WEEKLY RAID</div><h3>${boss.name}</h3><p>${boss.description}</p><div class="boss-progress"><div style="width:${Math.round(boss.value/boss.target*100)}%"></div></div><span>${boss.value} / ${boss.target} ${boss.unit}</span></div><div class="boss-reward">+300<br>XP</div></article><button class="${boss.complete&&!boss.claimed?'primary':'secondary'} ${boss.claimed?'completed':''}" data-boss-claim ${!boss.complete||boss.claimed?'disabled':''}>${boss.claimed?'✓ BOSS DEFEATED':boss.complete?'CLAIM 300 XP':'BOSS IN PROGRESS'}</button>`);
+  <article class="quest side-quest"><div class="quest-icon">${sideQuest.icon}</div><div class="quest-body"><h3>Side Quest · ${sideQuest.name}</h3><p>${sideQuest.description}</p></div><div class="reward">+15 XP</div></article>
+  <button class="secondary ${sideQuestDone?'completed':''}" data-side-quest ${sideQuestDone?'disabled':''}>${sideQuestDone?'✓ SIDE QUEST COMPLETE':'CONFIRM SIDE QUEST'}</button>
+  <div class="section-head"><h2>Weekly Boss</h2><span>Resets Monday</span></div><article class="boss-card ${boss.complete?'complete':''}"><div class="boss-icon">${boss.icon}</div><div class="boss-copy"><div class="boss-label">WEEKLY RAID</div><h3>${boss.name}</h3><p>${boss.description}</p><div class="boss-progress"><div style="width:${Math.round(boss.value/boss.target*100)}%"></div></div><span>${boss.value} / ${boss.target} ${boss.unit}</span></div><div class="boss-reward">+200<br>XP</div></article><button class="${boss.complete&&!boss.claimed?'primary':'secondary'} ${boss.claimed?'completed':''}" data-boss-claim ${!boss.complete||boss.claimed?'disabled':''}>${boss.claimed?'✓ BOSS DEFEATED':boss.complete?'CLAIM 200 XP':'BOSS IN PROGRESS'}</button>`);
 }
 
 function ensureDraft(){
@@ -333,12 +361,13 @@ function unlockedAchievements(){
   return achievementGroups().flatMap(group=>group[1]).filter(item=>item[3]>=item[4]).map(item=>({icon:item[0],name:item[1],description:item[2]}));
 }
 function unlockedThemes(){return Object.entries(themeModes).filter(([,theme])=>level()>=theme.level).map(([id,theme])=>({id,...theme}));}
-function progressSnapshot(){ return { level:level(), achievements:new Set(unlockedAchievements().map(item=>item.name)), themes:new Set(unlockedThemes().map(theme=>theme.id)) }; }
+function progressSnapshot(){ return { level:level(), achievements:new Set(unlockedAchievements().map(item=>item.name)), themes:new Set(unlockedThemes().map(theme=>theme.id)), emblem:emblemForLevel().id }; }
 function queueProgressRewards(before){
   for(let reached=before.level+1;reached<=level();reached++){
     const newTitle=titleForLevel(reached);const titleChanged=newTitle!==titleForLevel(reached-1);
     celebrationQueue.push({type:'level',icon:'✦',title:'LEVEL INCREASED',name:`Level ${reached}`,description:titleChanged?`New title acquired — ${newTitle}.`:`Current title — ${newTitle}. The next quest awaits.`});
   }
+  const evolvedEmblem=emblemForLevel();if(evolvedEmblem.id!==before.emblem)celebrationQueue.push({type:'emblem',icon:evolvedEmblem.glyph,title:'EMBLEM EVOLVED',name:evolvedEmblem.name,description:`Your Hunter emblem evolved at Level ${evolvedEmblem.level}.`});
   unlockedAchievements().filter(item=>!before.achievements.has(item.name)).forEach(item=>celebrationQueue.push({type:'achievement',icon:item.icon,title:'ACHIEVEMENT UNLOCKED',name:item.name,description:item.description}));
   unlockedThemes().filter(theme=>!before.themes.has(theme.id)).forEach(theme=>celebrationQueue.push({type:'theme',icon:'◈',title:'THEME UNLOCKED',name:theme.label,description:`The ${theme.label} interface theme is now available in Settings.`}));
   showNextCelebration();
@@ -378,7 +407,16 @@ function settings(){
   const modes=Object.entries(equipmentModes).map(([id,mode])=>`<button class="mode-option ${state.equipmentMode===id?'active':''}" data-mode="${id}"><b>${mode.label}</b><span>${mode.detail}</span>${state.equipmentMode===id?'<i>✓</i>':''}</button>`).join('');
   const difficulties=Object.entries(difficultyModes).map(([id,mode])=>`<button class="mode-option ${state.difficulty===id?'active':''}" data-difficulty="${id}"><b>${mode.label}</b><span>${mode.detail}</span>${state.difficulty===id?'<i>✓</i>':''}</button>`).join('');
   const themes=Object.entries(themeModes).map(([id,theme])=>{const unlocked=level()>=theme.level;return `<button class="theme-option ${state.theme===id?'active':''} ${unlocked?'':'locked'}" data-theme-choice="${id}" ${unlocked?'':'disabled'}><span class="theme-swatch" style="--theme-a:${theme.colors[0]};--theme-b:${theme.colors[1]}"></span><span><b>${theme.label}</b><small>${unlocked?state.theme===id?'Selected':'Unlocked':`Unlocks at Level ${theme.level}`}</small></span><i>${unlocked?(state.theme===id?'✓':''):'◆'}</i></button>`}).join('');
-  return shell(`<h1 class="page-title">Settings</h1><p class="page-sub">Your data stays in this browser on this device.</p><div class="settings-card"><h3>Hunter profile</h3><div class="field"><label>HUNTER NAME</label><input id="name" value="${esc(state.name)}" placeholder="Enter your hunter name" maxlength="24" autocomplete="nickname" /></div><button class="primary" data-save-name>SAVE NAME</button></div><div class="settings-card"><h3>Workout equipment</h3><p class="settings-note equipment-help">Your next quest uses only equipment from this program.</p><div class="mode-grid">${modes}</div></div><div class="settings-card"><h3>Quest difficulty</h3><p class="settings-note equipment-help">Changes sets, repetitions and suggested starting weights. Always prioritise safe form.</p><div class="mode-grid">${difficulties}</div></div><div class="settings-card"><h3>Interface theme</h3><p class="settings-note equipment-help">New visual styles unlock as your Hunter reaches Level 100.</p><div class="theme-grid">${themes}</div></div><div class="settings-card setting-row"><div><h3>Quest sounds</h3><p class="settings-note">Set confirmations, quests, levels and achievements.</p></div><button class="toggle ${state.soundEnabled?'on':''}" data-sound role="switch" aria-checked="${state.soundEnabled}"><span></span></button></div><div class="settings-card"><h3>Progression rules</h3><p class="settings-note">Strength prescription grows gradually with your level. Recovery Walk gains 5 minutes every 10 levels and stops increasing at 45 minutes.</p></div><div class="settings-card"><h3>Backup</h3><div class="button-row"><button class="secondary" data-export>Export data</button><button class="secondary" data-import>Import data</button></div><input type="file" id="file" accept="application/json" hidden /></div><div class="settings-card"><h3>Start over</h3><button class="secondary danger" data-reset>Reset all progress</button></div>`);
+  return shell(`<h1 class="page-title">Settings</h1><p class="page-sub">Your data stays in this browser on this device.</p>
+  <div class="settings-card"><h3>Hunter profile</h3><div class="field"><label>HUNTER NAME</label><input id="name" value="${esc(state.name)}" placeholder="Enter your hunter name" maxlength="24" autocomplete="nickname" /></div><button class="primary" data-save-name>SAVE NAME</button></div>
+  <div class="settings-card"><h3>Workout equipment</h3><p class="settings-note equipment-help">Your next quest uses only equipment from this program.</p><div class="mode-grid">${modes}</div></div>
+  <div class="settings-card"><h3>Quest difficulty</h3><p class="settings-note equipment-help">Changes sets, repetitions and suggested starting weights. Always prioritise safe form.</p><div class="mode-grid">${difficulties}</div></div>
+  <div class="settings-card"><h3>Interface theme</h3><p class="settings-note equipment-help">New visual styles unlock as your Hunter reaches Level 100.</p><div class="theme-grid">${themes}</div></div>
+  <div class="settings-card setting-row"><div><h3>Quest sounds</h3><p class="settings-note">Set confirmations, quests, levels and achievements.</p></div><button class="toggle ${state.soundEnabled?'on':''}" data-sound role="switch" aria-checked="${state.soundEnabled}"><span></span></button></div>
+  <div class="settings-card"><h3>How Ascension works</h3><p class="settings-note equipment-help">Replay the short guide to profiles, quests, training, Bosses and backups.</p><button class="secondary" data-tutorial>OPEN TUTORIAL</button></div>
+  <div class="settings-card"><h3>Progression rules</h3><p class="settings-note">Strength prescription grows gradually with your level. Recovery Walk gains 5 minutes every 10 levels and stops increasing at 45 minutes.</p></div>
+  <div class="settings-card"><h3>Backup</h3><div class="button-row"><button class="secondary" data-export>Export data</button><button class="secondary" data-import>Import data</button></div><input type="file" id="file" accept="application/json" hidden /></div>
+  <div class="settings-card"><h3>Start over</h3><button class="secondary danger" data-reset>Reset all progress</button></div>`);
 }
 function applyTheme(){document.documentElement.dataset.theme=state.theme;}
 function render(){ applyTheme();document.querySelector('#app').innerHTML=page==='home'?home():page==='workout'?workout():page==='progress'?progress():settings(); bind(); }
@@ -394,11 +432,13 @@ function bind(){
   document.querySelectorAll('[data-swap-choice]').forEach(b=>b.onclick=()=>{const index=+b.dataset.e;const current=state.draft.exercises[index];const option=alternativesFor(current)[+b.dataset.o];if(!option)return;state.draft.exercises[index]={...option,sets:[...current.sets]};swapOpen=null;save();render();toast(`Replaced with ${option.name}`)});
   document.querySelector('[data-finish]')?.addEventListener('click',finish);
   document.querySelector('[data-recovery]')?.addEventListener('click',completeRecovery);
+  document.querySelector('[data-side-quest]')?.addEventListener('click',completeSideQuest);
   document.querySelector('[data-boss-claim]')?.addEventListener('click',claimBoss);
   document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{state.equipmentMode=b.dataset.mode;state.draft=null;save();render();toast(`${equipmentModes[state.equipmentMode].label} quests selected`)});
   document.querySelectorAll('[data-difficulty]').forEach(b=>b.onclick=()=>{state.difficulty=b.dataset.difficulty;state.draft=null;save();render();toast(`${difficultyModes[state.difficulty].label} difficulty selected`)});
   document.querySelectorAll('[data-theme-choice]').forEach(b=>b.onclick=()=>{const id=b.dataset.themeChoice;if(level()<themeModes[id].level)return;state.theme=id;save();render();toast(`${themeModes[id].label} theme equipped`)});
   document.querySelector('[data-sound]')?.addEventListener('click',()=>{state.soundEnabled=!state.soundEnabled;save();render();if(state.soundEnabled)playSound('set');toast(state.soundEnabled?'Quest sounds enabled':'Quest sounds disabled')});
+  document.querySelector('[data-tutorial]')?.addEventListener('click',()=>showTutorial(true));
   document.querySelector('[data-save-name]')?.addEventListener('click',()=>{state.name=document.querySelector('#name').value.trim();save();render();toast(state.name?'Hunter name saved':'Hunter name cleared')});
   document.querySelector('[data-export]')?.addEventListener('click',exportData);
   document.querySelector('[data-import]')?.addEventListener('click',()=>document.querySelector('#file').click());
@@ -410,9 +450,13 @@ function completeRecovery(){
   const before=progressSnapshot();
   state.recoveryDate=localDay(); state.recoveryCount++; state.xp+=20; save(); render(); playSound('quest'); toast('Recovery complete · +20 XP'); queueProgressRewards(before);
 }
+function completeSideQuest(){
+  if(state.sideQuestDate===localDay())return;
+  const before=progressSnapshot();state.sideQuestDate=localDay();state.sideQuestCount++;state.xp+=15;save();render();playSound('set');toast('Side Quest complete · +15 XP');queueProgressRewards(before);
+}
 function claimBoss(){
   const boss=currentBoss();if(!boss.complete||boss.claimed)return;
-  const before=progressSnapshot();state.bossClaims[boss.key]=true;state.bossWins++;state.xp+=300;save();render();playSound('quest');toast('Weekly Boss defeated · +300 XP');queueProgressRewards(before);
+  const before=progressSnapshot();state.bossClaims[boss.key]=true;state.bossWins++;state.xp+=200;save();render();playSound('quest');toast('Weekly Boss defeated · +200 XP');queueProgressRewards(before);
 }
 function finish(){
   const before=progressSnapshot();
@@ -425,7 +469,7 @@ function finish(){
   state.routine=routineOrder[(routineOrder.indexOf(state.routine)+1)%routineOrder.length]; state.draft=null; swapOpen=null; save(); page='home'; render(); playSound('quest'); toast('Quest complete · +100 XP'); queueProgressRewards(before);
 }
 function exportData(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ascension-backup.json';a.click();URL.revokeObjectURL(a.href);}
-function importData(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const restored=JSON.parse(r.result);state={...initial,...restored,draft:null,onboardingComplete:true};if(state.name==='Mahmoud')state.name='';if(!routineOrder.includes(state.routine))state.routine='A';if(!equipmentModes[state.equipmentMode])state.equipmentMode='home';if(!difficultyModes[state.difficulty])state.difficulty='intermediate';if(!themeModes[state.theme]||level()<themeModes[state.theme].level)state.theme='shadow';if(!state.bossClaims||typeof state.bossClaims!=='object')state.bossClaims={};if(!Number.isFinite(state.bossWins))state.bossWins=0;save();page='home';render();toast('Backup restored')}catch{alert('That backup file could not be read.')}};r.readAsText(f);}
+function importData(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const restored=JSON.parse(r.result);state={...initial,...restored,draft:null,onboardingComplete:true,tutorialComplete:restored.tutorialComplete===undefined?true:Boolean(restored.tutorialComplete)};if(state.name==='Mahmoud')state.name='';if(!routineOrder.includes(state.routine))state.routine='A';if(!equipmentModes[state.equipmentMode])state.equipmentMode='home';if(!difficultyModes[state.difficulty])state.difficulty='intermediate';if(!themeModes[state.theme]||level()<themeModes[state.theme].level)state.theme='shadow';if(!state.bossClaims||typeof state.bossClaims!=='object')state.bossClaims={};if(!Number.isFinite(state.bossWins))state.bossWins=0;save();page='home';render();toast('Backup restored')}catch{alert('That backup file could not be read.')}};r.readAsText(f);}
 
 function showOnboarding(){
   if(state.onboardingComplete || document.querySelector('.onboarding'))return;
@@ -437,7 +481,21 @@ function showOnboarding(){
   document.body.appendChild(overlay);
   overlay.querySelectorAll('[data-onboarding-mode]').forEach(button=>button.onclick=()=>{chosenEquipment=button.dataset.onboardingMode;overlay.querySelectorAll('[data-onboarding-mode]').forEach(item=>item.classList.toggle('active',item===button))});
   overlay.querySelectorAll('[data-onboarding-difficulty]').forEach(button=>button.onclick=()=>{chosenDifficulty=button.dataset.onboardingDifficulty;overlay.querySelectorAll('[data-onboarding-difficulty]').forEach(item=>item.classList.toggle('active',item===button))});
-  overlay.querySelector('[data-onboarding-complete]').onclick=()=>{state.name=overlay.querySelector('#onboarding-name').value.trim();state.equipmentMode=chosenEquipment;state.difficulty=chosenDifficulty;state.onboardingComplete=true;state.draft=null;save();overlay.remove();render();toast(`Welcome, ${state.name||'Hunter'}`)};
+  overlay.querySelector('[data-onboarding-complete]').onclick=()=>{state.name=overlay.querySelector('#onboarding-name').value.trim();state.equipmentMode=chosenEquipment;state.difficulty=chosenDifficulty;state.onboardingComplete=true;state.draft=null;save();overlay.remove();render();toast(`Welcome, ${state.name||'Hunter'}`);setTimeout(()=>showTutorial(),350)};
+}
+
+function showTutorial(force=false){
+  if((state.tutorialComplete&&!force)||document.querySelector('.tutorial-overlay'))return;
+  const pages=[
+    {icon:'◈',step:'01',title:'Your Hunter Profile',text:'Complete quests to earn XP, increase your level, evolve your emblem, advance your title and unlock interface themes.'},
+    {icon:'⚔',step:'02',title:'Complete Quests',text:'Strength Quests build progression. Recovery Walks and optional Daily Side Quests provide smaller XP rewards.'},
+    {icon:'◇',step:'03',title:'Train Safely',text:'Choose an appropriate difficulty, complete the warm-up, open INFO for guidance, and SWAP any unsuitable exercise.'},
+    {icon:'♜',step:'04',title:'Defeat Weekly Bosses',text:'Each Monday begins a new Boss challenge. Complete its target and claim 200 bonus XP before the week ends.'},
+    {icon:'▣',step:'05',title:'Protect Your Progress',text:'Your data stays on this device. Export a backup regularly from Settings so it can be restored if your phone changes.'}
+  ];
+  let index=0;const overlay=document.createElement('div');overlay.className='tutorial-overlay';document.body.appendChild(overlay);
+  const close=()=>{state.tutorialComplete=true;save();overlay.remove()};
+  const draw=()=>{const item=pages[index];overlay.innerHTML=`<section class="tutorial-card"><button class="tutorial-skip" data-tutorial-skip>SKIP</button><div class="tutorial-icon">${item.icon}</div><div class="tutorial-step">SYSTEM GUIDE · ${item.step}/${String(pages.length).padStart(2,'0')}</div><h2>${item.title}</h2><p>${item.text}</p><div class="tutorial-dots">${pages.map((_,i)=>`<i class="${i===index?'active':''}"></i>`).join('')}</div><div class="tutorial-actions"><button class="secondary" data-tutorial-back ${index===0?'disabled':''}>BACK</button><button class="primary" data-tutorial-next>${index===pages.length-1?'FINISH':'NEXT'}</button></div></section>`;overlay.querySelector('[data-tutorial-skip]').onclick=close;overlay.querySelector('[data-tutorial-back]').onclick=()=>{if(index>0){index--;draw()}};overlay.querySelector('[data-tutorial-next]').onclick=()=>{if(index===pages.length-1)close();else{index++;draw()}}};draw();
 }
 
 function showWelcome(){
@@ -446,7 +504,7 @@ function showWelcome(){
   welcome.innerHTML=`<div class="welcome-sigil"><span>✦</span></div><p>ASCENSION PROTOCOL</p><h1>Welcome, <strong>${esc(state.name || 'Hunter')}</strong></h1><div class="welcome-title">${esc(titleForLevel())}</div><div class="welcome-line"></div><span class="welcome-sub">Your next quest awaits</span>`;
   document.body.appendChild(welcome);
   requestAnimationFrame(()=>welcome.classList.add('visible'));
-  setTimeout(()=>{welcome.classList.add('departing');setTimeout(()=>{welcome.remove();showOnboarding()},650)},1800);
+  setTimeout(()=>{welcome.classList.add('departing');setTimeout(()=>{welcome.remove();if(state.onboardingComplete)showTutorial();else showOnboarding()},650)},1800);
 }
 
 render();
