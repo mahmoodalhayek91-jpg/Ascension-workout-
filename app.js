@@ -166,17 +166,20 @@ function emblemForLevel(value=level()){return emblemStages.reduce((emblem,stage)
 function localDay(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 function recoveryMinutes(){ return Math.min(45, 10 + Math.floor(level()/10)*5); }
 function dailySideQuest(){
+  const tier=Math.floor(level()/10);
+  const minutes=(start,cap)=>Math.min(cap,start+tier);
+  const reps=(start,step,cap)=>Math.min(cap,start+tier*step);
   const tasks=[
-    {icon:'◌',name:'Mobility Flow',description:'Move gently through five minutes of comfortable mobility.'},
-    {icon:'⌁',name:'Posture Reset',description:'Spend three minutes opening the chest and moving the upper back.'},
-    {icon:'◇',name:'Bodyweight Primer',description:'Complete 10 slow bodyweight squats through a comfortable range.'},
-    {icon:'◎',name:'Core Control',description:'Complete 6 controlled dead bugs on each side.'},
-    {icon:'☾',name:'Flexibility Check',description:'Spend three minutes stretching without forcing the range.'},
-    {icon:'◈',name:'Breathing Reset',description:'Practise three minutes of slow, relaxed breathing.'},
-    state.equipmentMode==='gym'?{icon:'△',name:'Easy Cardio Primer',description:'Move easily on a treadmill or bike for five minutes.'}:{icon:'△',name:'Movement Break',description:'Walk or march comfortably for five minutes.'}
+    {icon:'◌',name:'Mobility Flow',description:`Move gently through ${minutes(5,12)} minutes of comfortable mobility.`},
+    {icon:'⌁',name:'Posture Reset',description:`Spend ${minutes(3,10)} minutes opening the chest and moving the upper back.`},
+    {icon:'◇',name:'Bodyweight Primer',description:`Complete ${reps(10,2,30)} slow bodyweight squats through a comfortable range.`},
+    {icon:'◎',name:'Core Control',description:`Complete ${reps(6,1,15)} controlled dead bugs on each side.`},
+    {icon:'☾',name:'Flexibility Check',description:`Spend ${minutes(3,10)} minutes stretching without forcing the range.`},
+    {icon:'◈',name:'Breathing Reset',description:`Practise ${minutes(3,8)} minutes of slow, relaxed breathing.`},
+    state.equipmentMode==='gym'?{icon:'△',name:'Easy Cardio Primer',description:`Move easily on a treadmill or bike for ${minutes(5,15)} minutes.`}:{icon:'△',name:'Movement Break',description:`Walk or march comfortably for ${minutes(5,15)} minutes.`}
   ];
   const [year,month,day]=localDay().split('-').map(Number);const index=Math.floor(Date.UTC(year,month-1,day)/86400000)%tasks.length;
-  return tasks[index];
+  return {...tasks[index],tier:tier+1};
 }
 function repTarget(ex){
   const base = ex.reps || Math.min(12, 8 + Math.floor(level()/5));
@@ -319,7 +322,7 @@ function showQuestDetails(type){
   const side=dailySideQuest();
   const detail=type==='recovery'
     ? {icon:'◌',label:'RECOVERY QUEST',title:'Recovery Walk',objective:`Walk for ${recoveryMinutes()} minutes at a comfortable, sustainable pace.`,reward:'20 XP',progression:'The duration increases by 5 minutes every 10 levels and stops increasing at 45 minutes.',completion:state.recoveryDate===localDay()?'Completed today':'Available to complete today',safety:'Choose a safe route, remain aware of your surroundings, and stop if you feel pain, dizziness or unusual discomfort.'}
-    : {icon:side.icon,label:'DAILY SIDE QUEST',title:side.name,objective:side.description,reward:'15 XP',progression:'A different optional Side Quest appears each day. Skipping it does not affect your workout streak.',completion:state.sideQuestDate===localDay()?'Completed today':'Available to complete today',safety:'Use a comfortable range and pace. Replace or skip the activity if it is unsuitable for you.'};
+    : {icon:side.icon,label:`DAILY SIDE QUEST · TIER ${side.tier}`,title:side.name,objective:side.description,reward:'15 XP',progression:'The target increases slightly every 10 levels until it reaches a sensible cap. A different optional Side Quest appears each day, and skipping it does not affect your streak.',completion:state.sideQuestDate===localDay()?'Completed today':'Available to complete today',safety:'Use a comfortable range and pace. Replace or skip the activity if it is unsuitable for you.'};
   const overlay=document.createElement('div');overlay.className='quest-detail-overlay';
   overlay.innerHTML=`<section class="quest-detail-modal"><button class="guide-close" data-detail-close aria-label="Close quest details">×</button><div class="quest-detail-icon">${detail.icon}</div><div class="guide-label">${detail.label}</div><h2>${esc(detail.title)}</h2><div class="quest-detail-reward">REWARD · ${detail.reward}</div><div class="guide-section"><b>Today’s objective</b><p>${esc(detail.objective)}</p></div><div class="guide-section cue"><b>Progression</b><p>${esc(detail.progression)}</p></div><div class="guide-section"><b>Status</b><p>${esc(detail.completion)}</p></div><p class="guide-safety">${esc(detail.safety)}</p><button class="primary" data-detail-close>CLOSE DETAILS</button></section>`;
   document.body.appendChild(overlay);overlay.querySelectorAll('[data-detail-close]').forEach(button=>button.onclick=()=>overlay.remove());
