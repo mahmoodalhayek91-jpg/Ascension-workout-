@@ -26,6 +26,9 @@ An original RPG-inspired progressive workout tracker built as an installable iPh
 - Exercise swaps are limited to three per Strength Quest, with a visible remaining-swap counter.
 - Daily Side Quest targets increase slightly every 10 levels, with separate sensible caps for repetitions and duration.
 - An offline Daily Directive rotates once per day on the Home screen.
+- XP requirements rise by 20 every 10 levels, from 200 XP to a permanent 400 XP cap, with automatic legacy-save migration.
+- Ten original Chronicle entries unlock every 10 levels and conclude permanently at Level 100.
+- Level 100 activates Eternal progression: one Eternal Shard per level, an Ascension Star every 10 levels, and cosmetic milestones through Level 500.
 
 ## Use
 

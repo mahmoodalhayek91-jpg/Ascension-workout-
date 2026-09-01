@@ -126,9 +126,28 @@ const emblemStages = [
   {id:'mythic',level:75,name:'Mythic Emblem',glyph:'✹'},
   {id:'eternal',level:100,name:'Eternal Insignia',glyph:'◈'}
 ];
+const chronicleEntries = [
+  {level:10,number:'I',title:'The Awakening',text:'At first light, the Hunter heard no command and received no promise. There was only a quiet decision: rise, begin, and return stronger than yesterday.'},
+  {level:20,number:'II',title:'The First Threshold',text:'The first threshold did not open for talent. It yielded to the rhythm of repeated effort, each ordinary day becoming another mark upon the path.'},
+  {level:30,number:'III',title:'The Iron Path',text:'Resistance shaped the Hunter as wind shapes stone. Difficulty was no longer an enemy, but a forge that revealed what patience could build.'},
+  {level:40,number:'IV',title:'The Shattered Limit',text:'A boundary once believed permanent finally cracked. Beyond it waited no shortcut—only a wider horizon and the courage to keep moving.'},
+  {level:50,number:'V',title:'The Ascendant',text:'Halfway to the summit, the Hunter looked back and found the starting point hidden by distance. Strength had arrived quietly, disguised as consistency.'},
+  {level:60,number:'VI',title:'The Storm Realm',text:'The path entered a season of thunder. When motivation faded, discipline remained, steady enough to carry the Hunter through every storm.'},
+  {level:70,number:'VII',title:'The Abyss',text:'In the deepest trial, progress became difficult to see. The Hunter continued anyway, learning that faith in the process is strongest before the result appears.'},
+  {level:80,number:'VIII',title:'The Mythic Trial',text:'What once seemed extraordinary had become routine. The true trial was no longer proving strength to others, but honoring the standard built within.'},
+  {level:90,number:'IX',title:'The Sovereign',text:'No crown was offered and none was needed. The Hunter had learned to command effort, recovery, and resolve—and therefore to command the path ahead.'},
+  {level:100,number:'X',title:'Eternal Ascension',text:'A hundred levels stand behind you—not as numbers, but as proof of every day you chose to continue. No prophecy carried you here. You earned this through discipline, patience, recovery, and resolve. The Chronicle is complete. Your Ascension is eternal.'}
+];
+const eternalMilestones = [
+  {level:125,icon:'◇',name:'Eternal Border',description:'A permanent radiant border for the Hunter profile.'},
+  {level:150,icon:'✦',name:'Eternal Aura',description:'A living aura effect surrounding the Hunter profile.'},
+  {level:200,icon:'◈',name:'Legendary Emblem',description:'An evolved variation of the Eternal Insignia.'},
+  {level:250,icon:'☄',name:'Eternal Welcome',description:'A special welcome effect for a veteran Hunter.'},
+  {level:500,icon:'∞',name:'Beyond the Summit',description:'The ultimate long-term Ascension achievement.'}
+];
 function activeRoutines(){ return equipmentModes[state.equipmentMode].routines; }
 
-const initial = { name: '', xp: 0, streak: 0, lastWorkout: null, workoutCount: 0, routine: 'A', equipmentMode: 'home', difficulty: 'beginner', theme: 'shadow', soundEnabled: false, onboardingComplete: false, tutorialComplete:false, history: [], bests: {}, draft: null, recoveryDate: null, recoveryCount: 0, sideQuestDate:null, sideQuestCount:0, bossClaims:{}, bossWins:0 };
+const initial = { name: '', xp: 0, xpSystemVersion:2, streak: 0, lastWorkout: null, workoutCount: 0, routine: 'A', equipmentMode: 'home', difficulty: 'beginner', theme: 'shadow', soundEnabled: false, onboardingComplete: false, tutorialComplete:false, eternalCelebrated:false, history: [], bests: {}, draft: null, recoveryDate: null, recoveryCount: 0, sideQuestDate:null, sideQuestCount:0, bossClaims:{}, bossWins:0 };
 let state = load();
 let page = 'home';
 let swapOpen = null;
@@ -139,7 +158,7 @@ function load() {
   try {
     const raw = localStorage.getItem('ascension-state');
     const stored = JSON.parse(raw || '{}');
-    const merged = { ...initial, ...stored };
+    const merged = migrateLegacyXp({ ...initial, ...stored },Boolean(raw)&&stored.xpSystemVersion!==2);
     if (merged.name === 'Mahmoud') merged.name = '';
     if (!routineOrder.includes(merged.routine)) merged.routine = 'A';
     if (!equipmentModes[merged.equipmentMode]) merged.equipmentMode = 'home';
@@ -150,6 +169,7 @@ function load() {
     if (!Number.isFinite(merged.bossWins)) merged.bossWins=0;
     if (stored.onboardingComplete === undefined) merged.onboardingComplete = Boolean(raw);
     if (stored.tutorialComplete === undefined) merged.tutorialComplete = Boolean(raw);
+    if (stored.eternalCelebrated === undefined && levelForXp(merged.xp)>=100) merged.eternalCelebrated = true;
     if (merged.draft && !merged.draft.version) merged.draft = null;
     if (merged.draft && !Number.isFinite(merged.draft.swapsUsed)) merged.draft.swapsUsed = 0;
     if (stored.recoveryCount === undefined && merged.recoveryDate) merged.recoveryCount = 1;
@@ -157,10 +177,20 @@ function load() {
   } catch { return { ...initial, history:[], bests:{}, bossClaims:{} }; }
 }
 function save(){ localStorage.setItem('ascension-state', JSON.stringify(state)); }
-function levelForXp(xp){ return Math.floor((Number(xp)||0) / 200) + 1; }
-function level(){ return Math.floor(state.xp / 200) + 1; }
-function levelXp(){ return state.xp % 200; }
-function rank(){ const l=level(); return l>=20?'Ascendant':l>=15?'Apex':l>=10?'Elite':l>=5?'Vanguard':'Initiate'; }
+function xpNeededForLevel(value){return Math.min(400,200+Math.floor(Math.max(1,value)/10)*20);}
+function xpAtStartOfLevel(value){let total=0;for(let current=1;current<Math.max(1,value);current++)total+=xpNeededForLevel(current);return total;}
+function levelForXp(xp){let remaining=Math.max(0,Number(xp)||0),value=1;while(remaining>=xpNeededForLevel(value)){remaining-=xpNeededForLevel(value);value++;}return value;}
+function migrateLegacyXp(record,needsMigration=true){
+  if(!needsMigration){record.xpSystemVersion=2;return record;}
+  const legacyXp=Math.max(0,Number(record.xp)||0);const legacyLevel=Math.floor(legacyXp/200)+1;const legacyProgress=(legacyXp%200)/200;
+  record.xp=xpAtStartOfLevel(legacyLevel)+Math.round(legacyProgress*xpNeededForLevel(legacyLevel));record.xpSystemVersion=2;return record;
+}
+function level(){ return levelForXp(state.xp); }
+function levelXp(){ return state.xp-xpAtStartOfLevel(level()); }
+function levelRequirement(){return xpNeededForLevel(level());}
+function rank(){ const l=level(); return l>=100?'Eternal':l>=20?'Ascendant':l>=15?'Apex':l>=10?'Elite':l>=5?'Vanguard':'Initiate'; }
+function eternalShards(){return Math.max(0,level()-100);}
+function ascensionStars(){return Math.max(0,Math.floor((level()-100)/10));}
 function titleForLevel(value=level()){return titleMilestones.reduce((title,[required,name])=>value>=required?name:title,'The Awakened');}
 function emblemForLevel(value=level()){return emblemStages.reduce((emblem,stage)=>value>=stage.level?stage:emblem,emblemStages[0]);}
 function localDay(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
@@ -243,7 +273,7 @@ function currentBoss(){
 }
 function esc(v=''){ return String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 function shell(content){ return `<main class="shell"><header class="topbar"><div><div class="eyebrow">Personal growth protocol</div><div class="brand">ASCENSION</div></div><button class="icon-btn" data-page="settings" aria-label="Settings">⚙</button></header>${content}</main>${nav()}<div id="toast" class="toast"></div>`; }
-function nav(){ return `<nav class="nav">${[['home','⌂','Home'],['workout','⚔','Quest'],['progress','◈','Progress'],['settings','⚙','Settings']].map(([id,icon,label])=>`<button data-page="${id}" class="${page===id?'active':''}"><i>${icon}</i>${label}</button>`).join('')}</nav>`; }
+function nav(){ return `<nav class="nav">${[['home','⌂','Home'],['workout','⚔','Quest'],['progress','◈','Progress'],['chronicle','▤','Chronicle'],['settings','⚙','Settings']].map(([id,icon,label])=>`<button data-page="${id}" class="${page===id?'active':''}"><i>${icon}</i>${label}</button>`).join('')}</nav>`; }
 
 function home(){
   const next = state.routine;
@@ -253,7 +283,10 @@ function home(){
   const sideQuest = dailySideQuest();
   const emblem=emblemForLevel();
   const boss=currentBoss();
-  return shell(`<section class="hero"><div class="profile-row"><div class="level-medal emblem-${emblem.id}" title="${emblem.name}"><i>${emblem.glyph}</i><div><span>LEVEL</span><b>${level()}</b></div></div><div class="profile-copy"><h1>${esc(state.name || 'Hunter')}</h1><div class="hunter-title">${esc(titleForLevel())}</div><div class="rank">Current rank · <strong>${rank()}</strong></div></div></div><div class="xp-line"><span>LEVEL PROGRESS</span><span>${levelXp()} / 200 XP</span></div><div class="xp-track"><div class="xp-fill" style="width:${levelXp()/2}%"></div></div><div class="stats"><div class="stat"><b>${state.streak}</b><span>Streak</span></div><div class="stat"><b>${state.workoutCount}</b><span>Quests</span></div><div class="stat"><b>${Object.keys(state.bests).length}</b><span>Records</span></div></div></section>
+  const hunterLevel=level();
+  const heroClasses=[hunterLevel>=125?'legacy-border':'',hunterLevel>=150?'eternal-aura':''].filter(Boolean).join(' ');
+  const eternalSummary=hunterLevel>=100?`<div class="eternal-summary"><div><span>ETERNAL SHARDS</span><b>◆ ${eternalShards()}</b></div><div><span>ASCENSION STARS</span><b>★ ${ascensionStars()}</b></div></div>`:'';
+  return shell(`<section class="hero ${heroClasses}"><div class="profile-row"><div class="level-medal emblem-${emblem.id} ${hunterLevel>=200?'legendary-variation':''}" title="${emblem.name}"><i>${emblem.glyph}</i><div><span>LEVEL</span><b>${hunterLevel}</b></div></div><div class="profile-copy"><h1>${esc(state.name || 'Hunter')}</h1><div class="hunter-title">${esc(titleForLevel())}</div><div class="rank">Current rank · <strong>${rank()}</strong></div></div></div><div class="xp-line"><span>LEVEL PROGRESS</span><span>${levelXp()} / ${levelRequirement()} XP</span></div><div class="xp-track"><div class="xp-fill" style="width:${Math.min(100,levelXp()/levelRequirement()*100)}%"></div></div>${eternalSummary}<div class="stats"><div class="stat"><b>${state.streak}</b><span>Streak</span></div><div class="stat"><b>${state.workoutCount}</b><span>Quests</span></div><div class="stat"><b>${Object.keys(state.bests).length}</b><span>Records</span></div></div></section>
   <aside class="daily-directive"><div class="directive-mark">✦</div><div><span>DAILY DIRECTIVE</span><p>“${esc(dailyDirective())}”</p></div></aside>
   <div class="section-head"><h2>Daily quests</h2><span>${new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</span></div>
   <div class="mode-chip">⌂ ${equipmentModes[state.equipmentMode].label} · ${difficultyModes[state.difficulty].label}</div>
@@ -368,7 +401,12 @@ function achievementGroups(){
       ['✹','Limit Breaker','Reach level 30',level(),30],
       ['♚','Ascendant','Reach level 50',level(),50],
       ['☀','Mythic','Reach level 75',level(),75],
-      ['★','Sovereign','Reach level 100',level(),100]
+      ['★','Sovereign','Reach level 100',level(),100],
+      ['◇','Eternal Border','Reach level 125',level(),125],
+      ['✦','Eternal Aura','Reach level 150',level(),150],
+      ['◈','Legendary Emblem','Reach level 200',level(),200],
+      ['☄','Eternal Welcome','Reach level 250',level(),250],
+      ['∞','Beyond the Summit','Reach level 500',level(),500]
     ]],
     ['Streaks', [
       ['◔','Spark','Build a 3-day streak',state.streak,3],
@@ -403,11 +441,16 @@ function progressSnapshot(){ return { level:level(), achievements:new Set(unlock
 function queueProgressRewards(before){
   for(let reached=before.level+1;reached<=level();reached++){
     const newTitle=titleForLevel(reached);const titleChanged=newTitle!==titleForLevel(reached-1);
-    celebrationQueue.push({type:'level',icon:'✦',title:'LEVEL INCREASED',name:`Level ${reached}`,description:titleChanged?`New title acquired — ${newTitle}.`:`Current title — ${newTitle}. The next quest awaits.`});
+    const eternalReward=reached>100?` Eternal Shard acquired — ${reached-100} total.${reached%10===0?` Ascension Star ${Math.floor((reached-100)/10)} earned.`:''}`:'';
+    celebrationQueue.push({type:'level',icon:reached>=100?'★':'✦',title:reached>100?'ETERNAL LEVEL INCREASED':'LEVEL INCREASED',name:`Level ${reached}`,description:(titleChanged?`New title acquired — ${newTitle}.`:`Current title — ${newTitle}. The next quest awaits.`)+eternalReward});
+    const entry=chronicleEntries.find(item=>item.level===reached);if(entry)celebrationQueue.push({type:'chronicle',icon:'▤',title:'CHRONICLE ENTRY UNLOCKED',name:`${entry.number} — ${entry.title}`,description:'A new permanent record is available in the Chronicle tab.'});
+    const milestone=eternalMilestones.find(item=>item.level===reached);if(milestone)celebrationQueue.push({type:'eternal',icon:milestone.icon,title:'ETERNAL REWARD UNLOCKED',name:milestone.name,description:milestone.description});
+    if(reached===100&&!state.eternalCelebrated){state.eternalCelebrated=true;celebrationQueue.push({type:'eternal',icon:'◈',title:'ETERNAL ASCENSION',name:'The Chronicle Is Complete',description:'A hundred levels now stand behind you as proof of discipline, patience, recovery, and resolve. No prophecy carried you here. You earned your Ascension.'});}
   }
   const evolvedEmblem=emblemForLevel();if(evolvedEmblem.id!==before.emblem)celebrationQueue.push({type:'emblem',icon:evolvedEmblem.glyph,title:'EMBLEM EVOLVED',name:evolvedEmblem.name,description:`Your Hunter emblem evolved at Level ${evolvedEmblem.level}.`});
   unlockedAchievements().filter(item=>!before.achievements.has(item.name)).forEach(item=>celebrationQueue.push({type:'achievement',icon:item.icon,title:'ACHIEVEMENT UNLOCKED',name:item.name,description:item.description}));
   unlockedThemes().filter(theme=>!before.themes.has(theme.id)).forEach(theme=>celebrationQueue.push({type:'theme',icon:'◈',title:'THEME UNLOCKED',name:theme.label,description:`The ${theme.label} interface theme is now available in Settings.`}));
+  save();
   showNextCelebration();
 }
 function showNextCelebration(){
@@ -441,6 +484,19 @@ function progress(){
   const achievementHtml=groups.map(([title,items])=>`<section class="achievement-section"><div class="achievement-category"><h3>${title}</h3><span>${items.filter(a=>a[3]>=a[4]).length}/${items.length}</span></div><div class="achievement-grid">${items.map(a=>`<div class="badge ${a[3]>=a[4]?'':'locked'}"><i>${a[0]}</i><b>${a[1]}</b><span>${a[2]}</span><em>${Math.min(a[3],a[4])} / ${a[4]}</em></div>`).join('')}</div></section>`).join('');
   return shell(`<h1 class="page-title">Progress</h1><p class="page-sub">Every completed quest makes the next one possible.</p><div class="section-head"><h2>Achievements</h2><span>${unlocked}/${all.length} unlocked</span></div>${achievementHtml}<div class="section-head"><h2>Quest history</h2><span>Newest first</span></div>${state.history.length?state.history.slice(0,12).map(h=>`<div class="history-row"><time>${new Date(h.date).toLocaleDateString(undefined,{month:'short',day:'numeric'})}</time><b>Strength Quest ${h.routine}</b><span>+100 XP</span></div>`).join(''):`<div class="empty">Your completed workouts will appear here.</div>`}`);
 }
+function chronicle(){
+  const hunterLevel=level();const unlocked=chronicleEntries.filter(entry=>hunterLevel>=entry.level).length;const complete=unlocked===chronicleEntries.length;
+  const entries=chronicleEntries.map((entry,index)=>{const available=hunterLevel>=entry.level;return `<button class="chronicle-entry ${available?'unlocked':'locked'} ${entry.level===100&&available?'final':''}" data-chronicle="${index}" ${available?'':'disabled'}><div class="chronicle-number">${available?entry.number:'?'}</div><div><span>${available?`ENTRY ${entry.number}`:`SEALED · LEVEL ${entry.level}`}</span><h3>${available?esc(entry.title):'Unknown Chronicle'}</h3><p>${available?'Tap to read this permanent record.':`Continue ascending to unlock at Level ${entry.level}.`}</p></div><i>${available?'›':'◆'}</i></button>`}).join('');
+  const milestones=eternalMilestones.map(item=>`<div class="eternal-milestone ${hunterLevel>=item.level?'unlocked':'locked'}"><i>${item.icon}</i><div><b>${item.name}</b><span>${item.description}</span></div><em>${hunterLevel>=item.level?'UNLOCKED':`LEVEL ${item.level}`}</em></div>`).join('');
+  const legacy=hunterLevel>=100?`<section class="eternal-panel"><div class="eternal-panel-head"><div><span>ETERNAL PROGRESSION</span><h2>Your journey continues</h2></div><div class="star-count">★ ${ascensionStars()}</div></div><p>The Chronicle is complete. Every level beyond 100 grants one Eternal Shard, and every ten levels grants an Ascension Star.</p><div class="eternal-currency"><div><b>◆ ${eternalShards()}</b><span>Eternal Shards</span></div><div><b>★ ${ascensionStars()}</b><span>Ascension Stars</span></div></div></section><div class="section-head"><h2>Eternal rewards</h2><span>${eternalMilestones.filter(item=>hunterLevel>=item.level).length}/${eternalMilestones.length}</span></div>${milestones}`:`<div class="chronicle-seal"><i>◈</i><b>Eternal Progression</b><span>Complete the Chronicle at Level 100 to reveal what lies beyond.</span></div>`;
+  return shell(`<h1 class="page-title">Chronicle</h1><p class="page-sub">A permanent record of the path from awakening to Level 100.</p><section class="chronicle-header ${complete?'complete':''}"><div class="chronicle-glyph">${complete?'◈':'◇'}</div><div><span>${complete?'CHRONICLE COMPLETE':'ASCENSION RECORD'}</span><h2>${unlocked} / ${chronicleEntries.length} entries</h2><p>${complete?'Your story is complete. Your Ascension is eternal.':'A new entry is revealed every 10 levels.'}</p></div></section><div class="chronicle-list">${entries}</div>${legacy}`);
+}
+function showChronicleEntry(index){
+  const entry=chronicleEntries[index];if(!entry||level()<entry.level)return;
+  const overlay=document.createElement('div');overlay.className='quest-detail-overlay chronicle-reader';
+  overlay.innerHTML=`<section class="quest-detail-modal chronicle-page ${entry.level===100?'final':''}"><button class="guide-close" data-chronicle-close aria-label="Close Chronicle entry">×</button><div class="chronicle-page-number">${entry.number}</div><div class="guide-label">CHRONICLE ENTRY · LEVEL ${entry.level}</div><h2>${esc(entry.title)}</h2><div class="chronicle-divider"></div><p class="chronicle-text">${esc(entry.text)}</p>${entry.level===100?'<div class="chronicle-complete-mark">◈ CHRONICLE COMPLETE ◈</div>':''}<button class="primary" data-chronicle-close>CLOSE CHRONICLE</button></section>`;
+  document.body.appendChild(overlay);overlay.querySelectorAll('[data-chronicle-close]').forEach(button=>button.onclick=()=>overlay.remove());
+}
 function settings(){
   const modes=Object.entries(equipmentModes).map(([id,mode])=>`<button class="mode-option ${state.equipmentMode===id?'active':''}" data-mode="${id}"><b>${mode.label}</b><span>${mode.detail}</span>${state.equipmentMode===id?'<i>✓</i>':''}</button>`).join('');
   const difficulties=Object.entries(difficultyModes).map(([id,mode])=>`<button class="mode-option ${state.difficulty===id?'active':''}" data-difficulty="${id}"><b>${mode.label}</b><span>${mode.detail}</span>${state.difficulty===id?'<i>✓</i>':''}</button>`).join('');
@@ -452,12 +508,12 @@ function settings(){
   <div class="settings-card"><h3>Interface theme</h3><p class="settings-note equipment-help">New visual styles unlock as your Hunter reaches Level 100.</p><div class="theme-grid">${themes}</div></div>
   <div class="settings-card setting-row"><div><h3>Quest sounds</h3><p class="settings-note">Set confirmations, quests, levels and achievements.</p></div><button class="toggle ${state.soundEnabled?'on':''}" data-sound role="switch" aria-checked="${state.soundEnabled}"><span></span></button></div>
   <div class="settings-card"><h3>How Ascension works</h3><p class="settings-note equipment-help">Replay the short guide to profiles, quests, training, Bosses and backups.</p><button class="secondary" data-tutorial>OPEN TUTORIAL</button></div>
-  <div class="settings-card"><h3>Progression rules</h3><p class="settings-note">Strength prescription grows gradually with your level. Recovery Walk gains 5 minutes every 10 levels and stops increasing at 45 minutes.</p></div>
+  <div class="settings-card"><h3>Progression rules</h3><p class="settings-note">XP requirements rise by 20 every 10 levels, from 200 XP to a permanent 400 XP cap. Strength prescriptions and Side Quests grow gradually, while the Recovery Walk stops increasing at 45 minutes.</p></div>
   <div class="settings-card"><h3>Backup</h3><div class="button-row"><button class="secondary" data-export>Export data</button><button class="secondary" data-import>Import data</button></div><input type="file" id="file" accept="application/json" hidden /></div>
   <div class="settings-card"><h3>Start over</h3><button class="secondary danger" data-reset>Reset all progress</button></div>`);
 }
 function applyTheme(){document.documentElement.dataset.theme=state.theme;}
-function render(){ applyTheme();document.querySelector('#app').innerHTML=page==='home'?home():page==='workout'?workout():page==='progress'?progress():settings(); bind(); }
+function render(){ applyTheme();document.querySelector('#app').innerHTML=page==='home'?home():page==='workout'?workout():page==='progress'?progress():page==='chronicle'?chronicle():settings(); bind(); }
 function toast(msg){ const el=document.querySelector('#toast'); if(!el)return; el.textContent=msg; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),1800); }
 function bind(){
   document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>{page=b.dataset.page;render();scrollTo(0,0)});
@@ -467,6 +523,7 @@ function bind(){
   document.querySelectorAll('[data-set]').forEach(b=>b.onclick=()=>{const sets=state.draft.exercises[+b.dataset.e].sets;sets[+b.dataset.s]=!sets[+b.dataset.s];if(sets[+b.dataset.s])playSound('set');save();render()});
   document.querySelectorAll('[data-swap]').forEach(b=>b.onclick=()=>{if((state.draft.swapsUsed||0)>=MAX_SWAPS_PER_QUEST){swapOpen=null;render();toast('Swap limit reached for this quest');return;}const index=+b.dataset.e;swapOpen=swapOpen===index?null:index;render()});
   document.querySelectorAll('[data-info]').forEach(b=>b.onclick=()=>showExerciseGuide(+b.dataset.e));
+  document.querySelectorAll('[data-chronicle]').forEach(b=>b.onclick=()=>showChronicleEntry(+b.dataset.chronicle));
   document.querySelectorAll('[data-quest-detail]').forEach(b=>b.onclick=()=>showQuestDetails(b.dataset.questDetail));
   document.querySelectorAll('[data-swap-choice]').forEach(b=>b.onclick=()=>{if((state.draft.swapsUsed||0)>=MAX_SWAPS_PER_QUEST){swapOpen=null;render();toast('Swap limit reached for this quest');return;}const index=+b.dataset.e;const current=state.draft.exercises[index];const option=alternativesFor(current)[+b.dataset.o];if(!option)return;state.draft.exercises[index]={...option,sets:[...current.sets]};state.draft.swapsUsed=(state.draft.swapsUsed||0)+1;const remaining=MAX_SWAPS_PER_QUEST-state.draft.swapsUsed;swapOpen=null;save();render();toast(`Replaced with ${option.name} · ${remaining} swap${remaining===1?'':'s'} left`)});
   document.querySelector('[data-finish]')?.addEventListener('click',finish);
@@ -508,7 +565,15 @@ function finish(){
   state.routine=routineOrder[(routineOrder.indexOf(state.routine)+1)%routineOrder.length]; state.draft=null; swapOpen=null; save(); page='home'; render(); playSound('quest'); toast('Quest complete · +100 XP'); queueProgressRewards(before);
 }
 function exportData(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ascension-backup.json';a.click();URL.revokeObjectURL(a.href);}
-function importData(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const restored=JSON.parse(r.result);state={...initial,...restored,draft:null,onboardingComplete:true,tutorialComplete:restored.tutorialComplete===undefined?true:Boolean(restored.tutorialComplete)};if(state.name==='Mahmoud')state.name='';if(!routineOrder.includes(state.routine))state.routine='A';if(!equipmentModes[state.equipmentMode])state.equipmentMode='home';if(!difficultyModes[state.difficulty])state.difficulty='intermediate';if(!themeModes[state.theme]||level()<themeModes[state.theme].level)state.theme='shadow';if(!state.bossClaims||typeof state.bossClaims!=='object')state.bossClaims={};if(!Number.isFinite(state.bossWins))state.bossWins=0;save();page='home';render();toast('Backup restored')}catch{alert('That backup file could not be read.')}};r.readAsText(f);}
+function importData(e){
+  const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{
+    const restored=JSON.parse(r.result);const migrated=migrateLegacyXp({...initial,...restored},restored.xpSystemVersion!==2);
+    state={...migrated,draft:null,onboardingComplete:true,tutorialComplete:restored.tutorialComplete===undefined?true:Boolean(restored.tutorialComplete)};
+    if(state.name==='Mahmoud')state.name='';if(!routineOrder.includes(state.routine))state.routine='A';if(!equipmentModes[state.equipmentMode])state.equipmentMode='home';if(!difficultyModes[state.difficulty])state.difficulty='intermediate';if(!themeModes[state.theme]||level()<themeModes[state.theme].level)state.theme='shadow';if(!state.bossClaims||typeof state.bossClaims!=='object')state.bossClaims={};if(!Number.isFinite(state.bossWins))state.bossWins=0;if(restored.eternalCelebrated===undefined&&level()>=100)state.eternalCelebrated=true;
+    save();page='home';render();toast('Backup restored');
+  }catch{alert('That backup file could not be read.')}};r.readAsText(f);
+}
 
 function showOnboarding(){
   if(state.onboardingComplete || document.querySelector('.onboarding'))return;
@@ -526,7 +591,7 @@ function showOnboarding(){
 function showTutorial(force=false){
   if((state.tutorialComplete&&!force)||document.querySelector('.tutorial-overlay'))return;
   const pages=[
-    {icon:'◈',step:'01',title:'Your Hunter Profile',text:'Complete quests to earn XP, increase your level, evolve your emblem, advance your title and unlock interface themes.'},
+    {icon:'◈',step:'01',title:'Your Hunter Profile',text:'Complete quests to earn XP, increase your level, evolve your emblem, unlock themes, and reveal a Chronicle entry every 10 levels.'},
     {icon:'⚔',step:'02',title:'Complete Quests',text:'Strength Quests build progression. Recovery Walks and optional Daily Side Quests provide smaller XP rewards.'},
     {icon:'◇',step:'03',title:'Train Safely',text:'Choose an appropriate difficulty, complete the warm-up, open INFO for guidance, and SWAP any unsuitable exercise.'},
     {icon:'♜',step:'04',title:'Defeat Weekly Bosses',text:'Each Monday begins a new Boss challenge. Complete its target and claim 200 bonus XP before the week ends.'},
@@ -539,7 +604,7 @@ function showTutorial(force=false){
 
 function showWelcome(){
   const welcome=document.createElement('div');
-  welcome.className='welcome-screen';
+  welcome.className=`welcome-screen ${level()>=250?'eternal-welcome':''}`;
   welcome.innerHTML=`<div class="welcome-sigil"><span>✦</span></div><p>ASCENSION PROTOCOL</p><h1>Welcome, <strong>${esc(state.name || 'Hunter')}</strong></h1><div class="welcome-title">${esc(titleForLevel())}</div><div class="welcome-line"></div><span class="welcome-sub">Your next quest awaits</span>`;
   document.body.appendChild(welcome);
   requestAnimationFrame(()=>welcome.classList.add('visible'));
