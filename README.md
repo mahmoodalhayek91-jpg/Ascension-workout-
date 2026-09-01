@@ -22,6 +22,7 @@ An original RPG-inspired progressive workout tracker built as an installable iPh
 - One optional Daily Side Quest rotates each day and awards 15 XP.
 - The Hunter emblem evolves visually at Levels 1, 10, 25, 50, 75 and 100.
 - New users receive a five-page tutorial that can be replayed later from Settings.
+- Recovery Walk and Daily Side Quest cards adapt to narrow screens and open clear detail panels when tapped.
 
 ## Use
 

@@ -233,9 +233,9 @@ function home(){
   <div class="mode-chip">⌂ ${equipmentModes[state.equipmentMode].label} · ${difficultyModes[state.difficulty].label}</div>
   <article class="quest"><div class="quest-icon">⚔</div><div class="quest-body"><h3>Strength Quest ${next} · ${current[next].title}</h3><p>${current[next].exercises.map(x=>x.name).slice(0,3).join(' · ')}</p></div><div class="reward">+100 XP</div></article>
   <button class="primary" data-start>BEGIN STRENGTH QUEST</button>
-  <article class="quest recovery-quest"><div class="quest-icon">◌</div><div class="quest-body"><h3>Recovery Walk · ${recoveryMinutes()} minutes</h3><p>Comfortable pace · increases every 10 levels</p></div><div class="reward">+20 XP</div></article>
+  <button class="quest recovery-quest quest-detail-card" data-quest-detail="recovery" aria-label="View Recovery Walk details"><div class="quest-icon">◌</div><div class="quest-body"><h3>Recovery Walk · ${recoveryMinutes()} minutes</h3><p>Comfortable pace · increases every 10 levels</p></div><div class="quest-meta"><div class="reward">+20 XP</div><span class="detail-chevron">›</span></div></button>
   <button class="secondary ${recoveryDone?'completed':''}" data-recovery ${recoveryDone?'disabled':''}>${recoveryDone?'✓ RECOVERY COMPLETE TODAY':'CONFIRM RECOVERY WALK'}</button>
-  <article class="quest side-quest"><div class="quest-icon">${sideQuest.icon}</div><div class="quest-body"><h3>Side Quest · ${sideQuest.name}</h3><p>${sideQuest.description}</p></div><div class="reward">+15 XP</div></article>
+  <button class="quest side-quest quest-detail-card" data-quest-detail="side" aria-label="View Daily Side Quest details"><div class="quest-icon">${sideQuest.icon}</div><div class="quest-body"><h3>Side Quest · ${sideQuest.name}</h3><p>${sideQuest.description}</p></div><div class="quest-meta"><div class="reward">+15 XP</div><span class="detail-chevron">›</span></div></button>
   <button class="secondary ${sideQuestDone?'completed':''}" data-side-quest ${sideQuestDone?'disabled':''}>${sideQuestDone?'✓ SIDE QUEST COMPLETE':'CONFIRM SIDE QUEST'}</button>
   <div class="section-head"><h2>Weekly Boss</h2><span>Resets Monday</span></div><article class="boss-card ${boss.complete?'complete':''}"><div class="boss-icon">${boss.icon}</div><div class="boss-copy"><div class="boss-label">WEEKLY RAID</div><h3>${boss.name}</h3><p>${boss.description}</p><div class="boss-progress"><div style="width:${Math.round(boss.value/boss.target*100)}%"></div></div><span>${boss.value} / ${boss.target} ${boss.unit}</span></div><div class="boss-reward">+200<br>XP</div></article><button class="${boss.complete&&!boss.claimed?'primary':'secondary'} ${boss.claimed?'completed':''}" data-boss-claim ${!boss.complete||boss.claimed?'disabled':''}>${boss.claimed?'✓ BOSS DEFEATED':boss.complete?'CLAIM 200 XP':'BOSS IN PROGRESS'}</button>`);
 }
@@ -309,6 +309,15 @@ function showExerciseGuide(index){
   const guide=exerciseGuide(exercise);const overlay=document.createElement('div');overlay.className='guide-overlay';
   overlay.innerHTML=`<section class="guide-card"><button class="guide-close" data-guide-close aria-label="Close instructions">×</button><div class="guide-label">EXERCISE GUIDE</div><h2>${esc(exercise.name)}</h2><div class="guide-pills"><span>Equipment · ${esc(guide.equipment)}</span><span>Muscles · ${esc(guide.muscles)}</span></div><div class="guide-section"><b>Starting position</b><p>${esc(guide.setup)}</p></div><div class="guide-section"><b>Movement</b><p>${esc(guide.movement)}</p></div><div class="guide-section cue"><b>Form cue</b><p>${esc(guide.cue)}</p></div><div class="guide-section warning"><b>Common mistake</b><p>${esc(guide.mistake)}</p></div><p class="guide-safety">Use a comfortable range and resistance. Stop if you feel sharp, unusual or worsening pain.</p><button class="primary" data-guide-close>UNDERSTOOD</button></section>`;
   document.body.appendChild(overlay);overlay.querySelectorAll('[data-guide-close]').forEach(button=>button.onclick=()=>overlay.remove());
+}
+function showQuestDetails(type){
+  const side=dailySideQuest();
+  const detail=type==='recovery'
+    ? {icon:'◌',label:'RECOVERY QUEST',title:'Recovery Walk',objective:`Walk for ${recoveryMinutes()} minutes at a comfortable, sustainable pace.`,reward:'20 XP',progression:'The duration increases by 5 minutes every 10 levels and stops increasing at 45 minutes.',completion:state.recoveryDate===localDay()?'Completed today':'Available to complete today',safety:'Choose a safe route, remain aware of your surroundings, and stop if you feel pain, dizziness or unusual discomfort.'}
+    : {icon:side.icon,label:'DAILY SIDE QUEST',title:side.name,objective:side.description,reward:'15 XP',progression:'A different optional Side Quest appears each day. Skipping it does not affect your workout streak.',completion:state.sideQuestDate===localDay()?'Completed today':'Available to complete today',safety:'Use a comfortable range and pace. Replace or skip the activity if it is unsuitable for you.'};
+  const overlay=document.createElement('div');overlay.className='quest-detail-overlay';
+  overlay.innerHTML=`<section class="quest-detail-modal"><button class="guide-close" data-detail-close aria-label="Close quest details">×</button><div class="quest-detail-icon">${detail.icon}</div><div class="guide-label">${detail.label}</div><h2>${esc(detail.title)}</h2><div class="quest-detail-reward">REWARD · ${detail.reward}</div><div class="guide-section"><b>Today’s objective</b><p>${esc(detail.objective)}</p></div><div class="guide-section cue"><b>Progression</b><p>${esc(detail.progression)}</p></div><div class="guide-section"><b>Status</b><p>${esc(detail.completion)}</p></div><p class="guide-safety">${esc(detail.safety)}</p><button class="primary" data-detail-close>CLOSE DETAILS</button></section>`;
+  document.body.appendChild(overlay);overlay.querySelectorAll('[data-detail-close]').forEach(button=>button.onclick=()=>overlay.remove());
 }
 function achievementGroups(){
   return [
@@ -429,6 +438,7 @@ function bind(){
   document.querySelectorAll('[data-set]').forEach(b=>b.onclick=()=>{const sets=state.draft.exercises[+b.dataset.e].sets;sets[+b.dataset.s]=!sets[+b.dataset.s];if(sets[+b.dataset.s])playSound('set');save();render()});
   document.querySelectorAll('[data-swap]').forEach(b=>b.onclick=()=>{const index=+b.dataset.e;swapOpen=swapOpen===index?null:index;render()});
   document.querySelectorAll('[data-info]').forEach(b=>b.onclick=()=>showExerciseGuide(+b.dataset.e));
+  document.querySelectorAll('[data-quest-detail]').forEach(b=>b.onclick=()=>showQuestDetails(b.dataset.questDetail));
   document.querySelectorAll('[data-swap-choice]').forEach(b=>b.onclick=()=>{const index=+b.dataset.e;const current=state.draft.exercises[index];const option=alternativesFor(current)[+b.dataset.o];if(!option)return;state.draft.exercises[index]={...option,sets:[...current.sets]};swapOpen=null;save();render();toast(`Replaced with ${option.name}`)});
   document.querySelector('[data-finish]')?.addEventListener('click',finish);
   document.querySelector('[data-recovery]')?.addEventListener('click',completeRecovery);
