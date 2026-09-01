@@ -25,6 +25,7 @@ An original RPG-inspired progressive workout tracker built as an installable iPh
 - Recovery Walk and Daily Side Quest cards adapt to narrow screens and open clear detail panels when tapped.
 - Exercise swaps are limited to three per Strength Quest, with a visible remaining-swap counter.
 - Daily Side Quest targets increase slightly every 10 levels, with separate sensible caps for repetitions and duration.
+- An offline Daily Directive rotates once per day on the Home screen.
 
 ## Use
 

@@ -181,6 +181,26 @@ function dailySideQuest(){
   const [year,month,day]=localDay().split('-').map(Number);const index=Math.floor(Date.UTC(year,month-1,day)/86400000)%tasks.length;
   return {...tasks[index],tier:tier+1};
 }
+function dailyDirective(){
+  const messages=[
+    'Consistency builds the hunter.',
+    'Small victories become lasting strength.',
+    'Show up today. Your future self is watching.',
+    'Master the next set, not the entire journey.',
+    'Strength grows where excuses end.',
+    'A steady pace can still conquer mountains.',
+    'Discipline turns ordinary days into progress.',
+    'Train with purpose. Recover with patience.',
+    'Your level follows your consistency.',
+    'Perfect is optional. Progress is the quest.',
+    'Respect the process and earn the result.',
+    'One controlled repetition is one step higher.',
+    'Today’s effort becomes tomorrow’s power.',
+    'The strongest habit is beginning again.'
+  ];
+  const [year,month,day]=localDay().split('-').map(Number);
+  return messages[Math.floor(Date.UTC(year,month-1,day)/86400000)%messages.length];
+}
 function repTarget(ex){
   const base = ex.reps || Math.min(12, 8 + Math.floor(level()/5));
   return Math.max(6, Math.min(15, base + difficultyModes[state.difficulty].reps));
@@ -234,6 +254,7 @@ function home(){
   const emblem=emblemForLevel();
   const boss=currentBoss();
   return shell(`<section class="hero"><div class="profile-row"><div class="level-medal emblem-${emblem.id}" title="${emblem.name}"><i>${emblem.glyph}</i><div><span>LEVEL</span><b>${level()}</b></div></div><div class="profile-copy"><h1>${esc(state.name || 'Hunter')}</h1><div class="hunter-title">${esc(titleForLevel())}</div><div class="rank">Current rank · <strong>${rank()}</strong></div></div></div><div class="xp-line"><span>LEVEL PROGRESS</span><span>${levelXp()} / 200 XP</span></div><div class="xp-track"><div class="xp-fill" style="width:${levelXp()/2}%"></div></div><div class="stats"><div class="stat"><b>${state.streak}</b><span>Streak</span></div><div class="stat"><b>${state.workoutCount}</b><span>Quests</span></div><div class="stat"><b>${Object.keys(state.bests).length}</b><span>Records</span></div></div></section>
+  <aside class="daily-directive"><div class="directive-mark">✦</div><div><span>DAILY DIRECTIVE</span><p>“${esc(dailyDirective())}”</p></div></aside>
   <div class="section-head"><h2>Daily quests</h2><span>${new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</span></div>
   <div class="mode-chip">⌂ ${equipmentModes[state.equipmentMode].label} · ${difficultyModes[state.difficulty].label}</div>
   <article class="quest"><div class="quest-icon">⚔</div><div class="quest-body"><h3>Strength Quest ${next} · ${current[next].title}</h3><p>${current[next].exercises.map(x=>x.name).slice(0,3).join(' · ')}</p></div><div class="reward">+100 XP</div></article>
@@ -246,7 +267,7 @@ function home(){
 }
 
 function ensureDraft(){
-  if(!state.draft || state.draft.routine!==state.routine || state.draft.version!==4 || state.draft.equipmentMode!==state.equipmentMode || state.draft.difficulty!==state.difficulty){
+  if(!state.draft || state.draft.routine!==state.routine || state.draft.version!==5 || state.draft.equipmentMode!==state.equipmentMode || state.draft.difficulty!==state.difficulty){
     const setCount=difficultyModes[state.difficulty].sets;
     state.draft={version:5,routine:state.routine,equipmentMode:state.equipmentMode,difficulty:state.difficulty,level:level(),warmupDone:false,warmupSkipped:false,swapsUsed:0,exercises:activeRoutines()[state.routine].exercises.map(ex=>({...ex,sets:Array(setCount).fill(false)}))}; save();
   }
