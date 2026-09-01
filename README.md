@@ -23,6 +23,7 @@ An original RPG-inspired progressive workout tracker built as an installable iPh
 - The Hunter emblem evolves visually at Levels 1, 10, 25, 50, 75 and 100.
 - New users receive a five-page tutorial that can be replayed later from Settings.
 - Recovery Walk and Daily Side Quest cards adapt to narrow screens and open clear detail panels when tapped.
+- Exercise swaps are limited to three per Strength Quest, with a visible remaining-swap counter.
 
 ## Use
 

@@ -1,4 +1,4 @@
-const CACHE = 'ascension-v10';
+const CACHE = 'ascension-v11';
 const ASSETS = ['./', './manifest.webmanifest', './style.css', './app.js', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS))));
 self.addEventListener('activate', event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))));

@@ -1,4 +1,5 @@
 const routineOrder = ['A', 'B', 'C', 'D', 'E', 'F'];
+const MAX_SWAPS_PER_QUEST = 3;
 const gymRoutines = {
   A: { title: 'Foundation', exercises: [
     { name: 'Barbell Back Squat', baseWeight: 20, group: 'lower' },
@@ -150,6 +151,7 @@ function load() {
     if (stored.onboardingComplete === undefined) merged.onboardingComplete = Boolean(raw);
     if (stored.tutorialComplete === undefined) merged.tutorialComplete = Boolean(raw);
     if (merged.draft && !merged.draft.version) merged.draft = null;
+    if (merged.draft && !Number.isFinite(merged.draft.swapsUsed)) merged.draft.swapsUsed = 0;
     if (stored.recoveryCount === undefined && merged.recoveryDate) merged.recoveryCount = 1;
     return merged;
   } catch { return { ...initial, history:[], bests:{}, bossClaims:{} }; }
@@ -243,8 +245,9 @@ function home(){
 function ensureDraft(){
   if(!state.draft || state.draft.routine!==state.routine || state.draft.version!==4 || state.draft.equipmentMode!==state.equipmentMode || state.draft.difficulty!==state.difficulty){
     const setCount=difficultyModes[state.difficulty].sets;
-    state.draft={version:4,routine:state.routine,equipmentMode:state.equipmentMode,difficulty:state.difficulty,level:level(),warmupDone:false,warmupSkipped:false,exercises:activeRoutines()[state.routine].exercises.map(ex=>({...ex,sets:Array(setCount).fill(false)}))}; save();
+    state.draft={version:5,routine:state.routine,equipmentMode:state.equipmentMode,difficulty:state.difficulty,level:level(),warmupDone:false,warmupSkipped:false,swapsUsed:0,exercises:activeRoutines()[state.routine].exercises.map(ex=>({...ex,sets:Array(setCount).fill(false)}))}; save();
   }
+  if(!Number.isFinite(state.draft.swapsUsed)){state.draft.swapsUsed=0;save();}
 }
 function warmup(){
   const moves=state.equipmentMode==='gym'
@@ -257,7 +260,8 @@ function workout(){
   if(!state.draft.warmupDone && !state.draft.warmupSkipped) return warmup();
   const done=state.draft.exercises.flatMap(e=>e.sets).filter(Boolean).length;
   const total=state.draft.exercises.flatMap(e=>e.sets).length;
-  return shell(`<h1 class="page-title">Strength Quest ${state.routine}</h1><p class="page-sub">${activeRoutines()[state.routine].title} · ${equipmentModes[state.equipmentMode].label} · ${difficultyModes[state.difficulty].label}</p><div class="routine-banner"><div><b>Quest progress</b><span>${done} of ${total} sets confirmed</span></div><div class="reward">${Math.round(done/total*100)}%</div></div>${state.draft.exercises.map((ex,ei)=>exerciseCard(ex,ei)).join('')}<div class="workout-actions"><button class="primary" data-finish ${done<total?'disabled style="opacity:.42"':''}>COMPLETE QUEST · +100 XP</button></div>`);
+  const swapsRemaining=Math.max(0,MAX_SWAPS_PER_QUEST-state.draft.swapsUsed);
+  return shell(`<h1 class="page-title">Strength Quest ${state.routine}</h1><p class="page-sub">${activeRoutines()[state.routine].title} · ${equipmentModes[state.equipmentMode].label} · ${difficultyModes[state.difficulty].label}</p><div class="routine-banner"><div><b>Quest progress</b><span>${done} of ${total} sets confirmed</span></div><div class="reward">${Math.round(done/total*100)}%</div></div><div class="swap-limit ${swapsRemaining===0?'exhausted':''}"><span>↻ Exercise swaps</span><b>${swapsRemaining} of ${MAX_SWAPS_PER_QUEST} remaining</b></div>${state.draft.exercises.map((ex,ei)=>exerciseCard(ex,ei)).join('')}<div class="workout-actions"><button class="primary" data-finish ${done<total?'disabled style="opacity:.42"':''}>COMPLETE QUEST · +100 XP</button></div>`);
 }
 function alternativesFor(ex){
   const all=Object.values(activeRoutines()).flatMap(r=>r.exercises);
@@ -301,8 +305,9 @@ function exerciseGuide(ex){
 }
 function exerciseCard(ex,ei){
   const alternatives=alternativesFor(ex);
-  const swapHtml=swapOpen===ei?`<div class="swap-panel"><span>Choose a suitable alternative</span>${alternatives.length?alternatives.map((option,oi)=>`<button data-swap-choice data-e="${ei}" data-o="${oi}">${esc(option.name)}</button>`).join(''):'<p>No equivalent exercise is available in this program.</p>'}</div>`:'';
-  return `<article class="exercise"><div class="exercise-top"><div class="exercise-num">${String(ei+1).padStart(2,'0')}</div><div class="exercise-name"><b>${ex.name}</b><span>${ex.sets.length} sets · ${prescription(ex)}</span></div><div class="exercise-tools"><button class="info-button" data-info data-e="${ei}" aria-label="Instructions for ${esc(ex.name)}">INFO</button><button class="swap-button" data-swap data-e="${ei}" aria-label="Replace ${esc(ex.name)}">SWAP</button></div></div>${swapHtml}${ex.sets.map((done,si)=>`<div class="confirm-row"><div><span>SET ${si+1}</span><b>${prescription(ex)}</b></div><button class="set-check ${done?'done':''}" data-set data-e="${ei}" data-s="${si}" aria-label="Confirm set ${si+1}">${done?'✓':'○'}</button></div>`).join('')}</article>`;
+  const swapsRemaining=Math.max(0,MAX_SWAPS_PER_QUEST-(state.draft.swapsUsed||0));
+  const swapHtml=swapOpen===ei&&swapsRemaining>0?`<div class="swap-panel"><span>Choose an alternative · ${swapsRemaining} swap${swapsRemaining===1?'':'s'} remaining</span>${alternatives.length?alternatives.map((option,oi)=>`<button data-swap-choice data-e="${ei}" data-o="${oi}">${esc(option.name)}</button>`).join(''):'<p>No equivalent exercise is available in this program.</p>'}</div>`:'';
+  return `<article class="exercise"><div class="exercise-top"><div class="exercise-num">${String(ei+1).padStart(2,'0')}</div><div class="exercise-name"><b>${ex.name}</b><span>${ex.sets.length} sets · ${prescription(ex)}</span></div><div class="exercise-tools"><button class="info-button" data-info data-e="${ei}" aria-label="Instructions for ${esc(ex.name)}">INFO</button><button class="swap-button" data-swap data-e="${ei}" aria-label="Replace ${esc(ex.name)}" ${swapsRemaining===0?'disabled':''}>${swapsRemaining===0?'LIMIT':'SWAP'}</button></div></div>${swapHtml}${ex.sets.map((done,si)=>`<div class="confirm-row"><div><span>SET ${si+1}</span><b>${prescription(ex)}</b></div><button class="set-check ${done?'done':''}" data-set data-e="${ei}" data-s="${si}" aria-label="Confirm set ${si+1}">${done?'✓':'○'}</button></div>`).join('')}</article>`;
 }
 function showExerciseGuide(index){
   const exercise=state.draft?.exercises[index];if(!exercise)return;
@@ -436,10 +441,10 @@ function bind(){
   document.querySelector('[data-warmup-done]')?.addEventListener('click',()=>{state.draft.warmupDone=true;save();render();toast('Warm-up complete')});
   document.querySelector('[data-warmup-skip]')?.addEventListener('click',()=>{state.draft.warmupSkipped=true;save();render()});
   document.querySelectorAll('[data-set]').forEach(b=>b.onclick=()=>{const sets=state.draft.exercises[+b.dataset.e].sets;sets[+b.dataset.s]=!sets[+b.dataset.s];if(sets[+b.dataset.s])playSound('set');save();render()});
-  document.querySelectorAll('[data-swap]').forEach(b=>b.onclick=()=>{const index=+b.dataset.e;swapOpen=swapOpen===index?null:index;render()});
+  document.querySelectorAll('[data-swap]').forEach(b=>b.onclick=()=>{if((state.draft.swapsUsed||0)>=MAX_SWAPS_PER_QUEST){swapOpen=null;render();toast('Swap limit reached for this quest');return;}const index=+b.dataset.e;swapOpen=swapOpen===index?null:index;render()});
   document.querySelectorAll('[data-info]').forEach(b=>b.onclick=()=>showExerciseGuide(+b.dataset.e));
   document.querySelectorAll('[data-quest-detail]').forEach(b=>b.onclick=()=>showQuestDetails(b.dataset.questDetail));
-  document.querySelectorAll('[data-swap-choice]').forEach(b=>b.onclick=()=>{const index=+b.dataset.e;const current=state.draft.exercises[index];const option=alternativesFor(current)[+b.dataset.o];if(!option)return;state.draft.exercises[index]={...option,sets:[...current.sets]};swapOpen=null;save();render();toast(`Replaced with ${option.name}`)});
+  document.querySelectorAll('[data-swap-choice]').forEach(b=>b.onclick=()=>{if((state.draft.swapsUsed||0)>=MAX_SWAPS_PER_QUEST){swapOpen=null;render();toast('Swap limit reached for this quest');return;}const index=+b.dataset.e;const current=state.draft.exercises[index];const option=alternativesFor(current)[+b.dataset.o];if(!option)return;state.draft.exercises[index]={...option,sets:[...current.sets]};state.draft.swapsUsed=(state.draft.swapsUsed||0)+1;const remaining=MAX_SWAPS_PER_QUEST-state.draft.swapsUsed;swapOpen=null;save();render();toast(`Replaced with ${option.name} · ${remaining} swap${remaining===1?'':'s'} left`)});
   document.querySelector('[data-finish]')?.addEventListener('click',finish);
   document.querySelector('[data-recovery]')?.addEventListener('click',completeRecovery);
   document.querySelector('[data-side-quest]')?.addEventListener('click',completeSideQuest);
