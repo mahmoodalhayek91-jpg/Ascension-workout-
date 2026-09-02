@@ -30,6 +30,9 @@ An original RPG-inspired progressive workout tracker built as an installable iPh
 - Ten original Chronicle entries unlock every 10 levels and conclude permanently at Level 100.
 - Level 100 activates Eternal progression: one Eternal Shard per level, an Ascension Star every 10 levels, and cosmetic milestones through Level 500.
 - Supporting interface text uses an enhanced readability scale while retaining a compact layout on narrow phones.
+- Home A–F quests are balanced full-body sessions with difficulty-based bodyweight variations and rest guidance.
+- Completed exercises accept optional difficulty feedback that adapts their next prescription within safe limits.
+- Home quests include an optional four-minute low-impact-friendly finisher worth 10 XP and a weekly training summary.
 
 ## Use
 

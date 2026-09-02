@@ -51,28 +51,28 @@ const homeRoutines = {
     { name: 'Dumbbell Bench Press', baseWeight: 6, group: 'upper' },
     { name: 'One-Arm Dumbbell Row', baseWeight: 8, group: 'upper' },
     { name: 'Barbell Romanian Deadlift', baseWeight: 20, group: 'lower' },
-    { name: 'Plank', seconds: 25, group: 'core' }
+    { name: 'Plank', seconds: 25, group: 'core', variants:{beginner:'Knee Plank',intermediate:'Plank',advanced:'Long-Lever Plank'} }
   ]},
   B: { title: 'Home Vanguard', exercises: [
     { name: 'Dumbbell Reverse Lunge', baseWeight: 6, group: 'lower' },
     { name: 'Seated Dumbbell Press', baseWeight: 5, group: 'upper' },
     { name: 'Barbell Bent-Over Row', baseWeight: 15, group: 'upper' },
     { name: 'Bench Hip Thrust', baseWeight: 20, group: 'lower' },
-    { name: 'Side Plank', seconds: 20, group: 'core' }
+    { name: 'Side Plank', seconds: 20, group: 'core', variants:{beginner:'Bent-Knee Side Plank',intermediate:'Side Plank',advanced:'Long-Lever Side Plank'} }
   ]},
-  C: { title: 'Home Upper Forge', exercises: [
+  C: { title: 'Home Balance Forge', exercises: [
+    { name: 'Barbell Front Squat', baseWeight: 15, group: 'lower' },
     { name: 'Incline Dumbbell Press', baseWeight: 6, group: 'upper' },
     { name: 'Bench-Supported Dumbbell Row', baseWeight: 8, group: 'upper' },
-    { name: 'Dumbbell Lateral Raise', baseWeight: 3, group: 'upper' },
-    { name: 'Dumbbell Hammer Curl', baseWeight: 4, group: 'upper' },
-    { name: 'Close-Grip Push-Up', baseWeight: 0, group: 'body' }
-  ]},
-  D: { title: 'Home Lower Forge', exercises: [
-    { name: 'Barbell Back Squat', baseWeight: 20, group: 'lower' },
-    { name: 'Bulgarian Split Squat', baseWeight: 5, group: 'lower' },
-    { name: 'Dumbbell Romanian Deadlift', baseWeight: 12, group: 'lower' },
-    { name: 'Standing Calf Raise', baseWeight: 8, group: 'lower' },
+    { name: 'Single-Leg Dumbbell Romanian Deadlift', baseWeight: 6, group: 'lower' },
     { name: 'Dead Bug', reps: 8, group: 'core' }
+  ]},
+  D: { title: 'Home Resilience', exercises: [
+    { name: 'Bulgarian Split Squat', baseWeight: 5, group: 'lower' },
+    { name: 'Push-Up', baseWeight: 0, group: 'body', variants:{beginner:'Bench Push-Up',intermediate:'Push-Up',advanced:'Slow Pause Push-Up'} },
+    { name: 'Barbell Bent-Over Row', baseWeight: 15, group: 'upper' },
+    { name: 'Bench Hip Thrust', baseWeight: 20, group: 'lower' },
+    { name: 'Side Plank', seconds: 20, group: 'core', variants:{beginner:'Bent-Knee Side Plank',intermediate:'Side Plank',advanced:'Long-Lever Side Plank'} }
   ]},
   E: { title: 'Home Athletic', exercises: [
     { name: 'Bench Step-Up', baseWeight: 5, group: 'lower' },
@@ -84,10 +84,19 @@ const homeRoutines = {
   F: { title: 'Home Total Body', exercises: [
     { name: 'Dumbbell Thruster', baseWeight: 5, group: 'lower' },
     { name: 'Barbell Deadlift', baseWeight: 20, group: 'lower' },
-    { name: 'Push-Up', baseWeight: 0, group: 'body' },
+    { name: 'Push-Up', baseWeight: 0, group: 'body', variants:{beginner:'Bench Push-Up',intermediate:'Push-Up',advanced:'Slow Pause Push-Up'} },
     { name: 'Dumbbell Pullover on Bench', baseWeight: 6, group: 'upper' },
-    { name: 'Mountain Climber', seconds: 25, group: 'core' }
+    { name: 'Mountain Climber', seconds: 25, group: 'core', variants:{beginner:'Elevated Slow Mountain Climber',intermediate:'Mountain Climber',advanced:'Cross-Body Mountain Climber'} }
   ]}
+};
+
+const homeFinishers = {
+  A:{name:'Foundation Pulse',moves:['30 sec brisk march','30 sec bodyweight squats','30 sec step jacks','30 sec easy recovery'],rounds:2,alternative:'Keep every movement low-impact and use a chair for balance if needed.'},
+  B:{name:'Vanguard Circuit',moves:['30 sec alternating reverse lunges','30 sec shadow boxing','30 sec fast march','30 sec easy recovery'],rounds:2,alternative:'Use shallow supported lunges or replace them with sit-to-stands.'},
+  C:{name:'Balance Surge',moves:['30 sec bench step-ups','30 sec standing knee drives','30 sec low-impact skaters','30 sec easy recovery'],rounds:2,alternative:'Replace step-ups with marching and keep all steps controlled.'},
+  D:{name:'Resilience Round',moves:['30 sec sit-to-stands','30 sec wall or bench push-ups','30 sec march with arm drive','30 sec easy recovery'],rounds:2,alternative:'Slow the pace and use a stable bench or chair for support.'},
+  E:{name:'Athletic Spark',moves:['30 sec quick step-ups','30 sec low-impact mountain climbers','30 sec bodyweight good mornings','30 sec easy recovery'],rounds:2,alternative:'March in place instead of step-ups or mountain climbers.'},
+  F:{name:'Total-Body Finale',moves:['30 sec squat to reach','30 sec bench push-ups','30 sec alternating knee drives','30 sec easy recovery'],rounds:2,alternative:'Reduce the range, use support, and keep both feet grounded.'}
 };
 
 const equipmentModes = {
@@ -147,7 +156,7 @@ const eternalMilestones = [
 ];
 function activeRoutines(){ return equipmentModes[state.equipmentMode].routines; }
 
-const initial = { name: '', xp: 0, xpSystemVersion:2, streak: 0, lastWorkout: null, workoutCount: 0, routine: 'A', equipmentMode: 'home', difficulty: 'beginner', theme: 'shadow', soundEnabled: false, onboardingComplete: false, tutorialComplete:false, eternalCelebrated:false, history: [], bests: {}, draft: null, recoveryDate: null, recoveryCount: 0, sideQuestDate:null, sideQuestCount:0, bossClaims:{}, bossWins:0 };
+const initial = { name: '', xp: 0, xpSystemVersion:2, streak: 0, lastWorkout: null, workoutCount: 0, routine: 'A', equipmentMode: 'home', difficulty: 'beginner', theme: 'shadow', soundEnabled: false, onboardingComplete: false, tutorialComplete:false, eternalCelebrated:false, history: [], bests: {}, exerciseAdjustments:{}, draft: null, recoveryDate: null, recoveryCount: 0, sideQuestDate:null, sideQuestCount:0, bossClaims:{}, bossWins:0 };
 let state = load();
 let page = 'home';
 let swapOpen = null;
@@ -167,6 +176,7 @@ function load() {
     if (!themeModes[merged.theme] || levelForXp(merged.xp)<themeModes[merged.theme].level) merged.theme = 'shadow';
     if (!merged.bossClaims || typeof merged.bossClaims!=='object') merged.bossClaims={};
     if (!Number.isFinite(merged.bossWins)) merged.bossWins=0;
+    if (!merged.exerciseAdjustments || typeof merged.exerciseAdjustments!=='object') merged.exerciseAdjustments={};
     if (stored.onboardingComplete === undefined) merged.onboardingComplete = Boolean(raw);
     if (stored.tutorialComplete === undefined) merged.tutorialComplete = Boolean(raw);
     if (stored.eternalCelebrated === undefined && levelForXp(merged.xp)>=100) merged.eternalCelebrated = true;
@@ -231,25 +241,38 @@ function dailyDirective(){
   const [year,month,day]=localDay().split('-').map(Number);
   return messages[Math.floor(Date.UTC(year,month-1,day)/86400000)%messages.length];
 }
+function exerciseKey(ex){return ex.trackingName||ex.name;}
+function exerciseAdjustment(ex){if(state.equipmentMode!=='home')return 0;const value=Number(state.exerciseAdjustments[exerciseKey(ex)]);return Number.isFinite(value)?Math.max(-3,Math.min(4,value)):0;}
 function repTarget(ex){
   const base = ex.reps || Math.min(12, 8 + Math.floor(level()/5));
-  return Math.max(6, Math.min(15, base + difficultyModes[state.difficulty].reps));
+  const adaptive=ex.baseWeight?0:exerciseAdjustment(ex)*2;
+  return Math.max(6, Math.min(20, base + difficultyModes[state.difficulty].reps + adaptive));
 }
 function timeTarget(ex){
   if (!ex.seconds) return null;
   const adjustment = state.difficulty==='beginner' ? -5 : state.difficulty==='advanced' ? 5 : 0;
-  return Math.max(15, Math.min(ex.seconds + 30, ex.seconds + Math.floor(level()/10)*5 + adjustment));
+  return Math.max(15, Math.min(ex.seconds + 40, ex.seconds + Math.floor(level()/10)*5 + adjustment + exerciseAdjustment(ex)*5));
 }
 function weightTarget(ex){
   if (ex.baseWeight === undefined || ex.baseWeight === 0) return ex.baseWeight || null;
   const step = ex.group === 'lower' ? 2.5 : 1;
-  const target = (ex.baseWeight + Math.floor(level()/5)*step) * difficultyModes[state.difficulty].weight;
+  const target = (ex.baseWeight + (Math.floor(level()/5)+exerciseAdjustment(ex))*step) * difficultyModes[state.difficulty].weight;
   return Math.max(.5, Math.round(target*2)/2);
 }
 function prescription(ex){
   if (ex.seconds) return `${timeTarget(ex)} seconds`;
   const weight = weightTarget(ex);
   return `${repTarget(ex)} reps${weight ? ` · suggested ${weight} kg` : ''}`;
+}
+function restGuidance(ex){
+  const name=ex.name.toLowerCase();
+  if(ex.group==='lower'||name.includes('deadlift')||name.includes('squat')||name.includes('hip thrust'))return 'Rest 90–150 sec';
+  if(ex.group==='core'||ex.group==='body'||ex.group==='carry')return 'Rest 45–75 sec';
+  return 'Rest 60–90 sec';
+}
+function prepareDraftExercise(ex,setCount,existingSets=null){
+  const trackingName=ex.trackingName||ex.name;const variant=state.equipmentMode==='home'&&ex.variants?ex.variants[state.difficulty]:null;
+  return {...ex,trackingName,name:variant||ex.name,sets:existingSets?[...existingSets]:Array(setCount).fill(false),effort:null};
 }
 function weekWindow(){
   const now=new Date();const start=new Date(now.getFullYear(),now.getMonth(),now.getDate());
@@ -271,6 +294,10 @@ function currentBoss(){
   const boss=bosses[index];const value=Math.min(boss.target,boss.value());
   return {...boss,value,key:window.key,claimed:Boolean(state.bossClaims[window.key]),complete:value>=boss.target};
 }
+function weeklyHomeTraining(){
+  const window=weekWindow();const workouts=state.history.filter(item=>{const date=new Date(item.date);return item.equipmentMode==='home'&&date>=window.start&&date<window.end});
+  return {sessions:workouts.length,sets:workouts.reduce((sum,item)=>sum+(item.setsConfirmed||0),0),finishers:workouts.filter(item=>item.finisherCompleted).length};
+}
 function esc(v=''){ return String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 function shell(content){ return `<main class="shell"><header class="topbar"><div><div class="eyebrow">Personal growth protocol</div><div class="brand">ASCENSION</div></div><button class="icon-btn" data-page="settings" aria-label="Settings">⚙</button></header>${content}</main>${nav()}<div id="toast" class="toast"></div>`; }
 function nav(){ return `<nav class="nav">${[['home','⌂','Home'],['workout','⚔','Quest'],['progress','◈','Progress'],['chronicle','▤','Chronicle'],['settings','⚙','Settings']].map(([id,icon,label])=>`<button data-page="${id}" class="${page===id?'active':''}"><i>${icon}</i>${label}</button>`).join('')}</nav>`; }
@@ -286,8 +313,10 @@ function home(){
   const hunterLevel=level();
   const heroClasses=[hunterLevel>=125?'legacy-border':'',hunterLevel>=150?'eternal-aura':''].filter(Boolean).join(' ');
   const eternalSummary=hunterLevel>=100?`<div class="eternal-summary"><div><span>ETERNAL SHARDS</span><b>◆ ${eternalShards()}</b></div><div><span>ASCENSION STARS</span><b>★ ${ascensionStars()}</b></div></div>`:'';
+  const homeWeek=weeklyHomeTraining();const weeklyHomeHtml=state.equipmentMode==='home'?`<section class="home-week"><div class="home-week-head"><div><span>WEEKLY HOME TRAINING</span><h2>${homeWeek.sessions>=2?'Strength goal achieved':'Build a stronger week'}</h2></div><b>${Math.min(homeWeek.sessions,2)} / 2</b></div><div class="home-week-track"><div style="width:${Math.min(100,homeWeek.sessions/2*100)}%"></div></div><div class="home-week-stats"><div><b>${homeWeek.sessions}</b><span>Home quests</span></div><div><b>${homeWeek.sets}</b><span>Sets confirmed</span></div><div><b>${homeWeek.finishers}</b><span>Finishers</span></div></div></section>`:'';
   return shell(`<section class="hero ${heroClasses}"><div class="profile-row"><div class="level-medal emblem-${emblem.id} ${hunterLevel>=200?'legendary-variation':''}" title="${emblem.name}"><i>${emblem.glyph}</i><div><span>LEVEL</span><b>${hunterLevel}</b></div></div><div class="profile-copy"><h1>${esc(state.name || 'Hunter')}</h1><div class="hunter-title">${esc(titleForLevel())}</div><div class="rank">Current rank · <strong>${rank()}</strong></div></div></div><div class="xp-line"><span>LEVEL PROGRESS</span><span>${levelXp()} / ${levelRequirement()} XP</span></div><div class="xp-track"><div class="xp-fill" style="width:${Math.min(100,levelXp()/levelRequirement()*100)}%"></div></div>${eternalSummary}<div class="stats"><div class="stat"><b>${state.streak}</b><span>Streak</span></div><div class="stat"><b>${state.workoutCount}</b><span>Quests</span></div><div class="stat"><b>${Object.keys(state.bests).length}</b><span>Records</span></div></div></section>
   <aside class="daily-directive"><div class="directive-mark">✦</div><div><span>DAILY DIRECTIVE</span><p>“${esc(dailyDirective())}”</p></div></aside>
+  ${weeklyHomeHtml}
   <div class="section-head"><h2>Daily quests</h2><span>${new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</span></div>
   <div class="mode-chip">⌂ ${equipmentModes[state.equipmentMode].label} · ${difficultyModes[state.difficulty].label}</div>
   <article class="quest"><div class="quest-icon">⚔</div><div class="quest-body"><h3>Strength Quest ${next} · ${current[next].title}</h3><p>${current[next].exercises.map(x=>x.name).slice(0,3).join(' · ')}</p></div><div class="reward">+100 XP</div></article>
@@ -300,16 +329,16 @@ function home(){
 }
 
 function ensureDraft(){
-  if(!state.draft || state.draft.routine!==state.routine || state.draft.version!==5 || state.draft.equipmentMode!==state.equipmentMode || state.draft.difficulty!==state.difficulty){
+  if(!state.draft || state.draft.routine!==state.routine || state.draft.version!==6 || state.draft.equipmentMode!==state.equipmentMode || state.draft.difficulty!==state.difficulty){
     const setCount=difficultyModes[state.difficulty].sets;
-    state.draft={version:5,routine:state.routine,equipmentMode:state.equipmentMode,difficulty:state.difficulty,level:level(),warmupDone:false,warmupSkipped:false,swapsUsed:0,exercises:activeRoutines()[state.routine].exercises.map(ex=>({...ex,sets:Array(setCount).fill(false)}))}; save();
+    state.draft={version:6,routine:state.routine,equipmentMode:state.equipmentMode,difficulty:state.difficulty,level:level(),warmupDone:false,warmupSkipped:false,swapsUsed:0,finisherDone:false,exercises:activeRoutines()[state.routine].exercises.map(ex=>prepareDraftExercise(ex,setCount))}; save();
   }
   if(!Number.isFinite(state.draft.swapsUsed)){state.draft.swapsUsed=0;save();}
 }
 function warmup(){
   const moves=state.equipmentMode==='gym'
     ? ['2 minutes easy treadmill or bike','10 arm circles each direction','10 controlled bodyweight squats','One light practice set of the first exercise']
-    : ['2 minutes marching in place','10 arm circles each direction','10 controlled bodyweight squats','One light practice set of the first exercise'];
+    : ['60 seconds marching in place','10 arm circles each direction','10 controlled bodyweight squats','10 slow hip hinges','One light practice set of the first exercise'];
   return shell(`<h1 class="page-title">Warm-up Quest</h1><p class="page-sub">Optional · prepare your joints and practise the movements before adding effort.</p><article class="warmup-card"><div class="warmup-mark">◇</div><h2>Awaken the body</h2><p>Move comfortably. Stop if anything feels painful or unusual.</p><ol>${moves.map(move=>`<li>${move}</li>`).join('')}</ol></article><button class="primary" data-warmup-done>COMPLETE WARM-UP</button><button class="text-button" data-warmup-skip>SKIP FOR TODAY</button>`);
 }
 function workout(){
@@ -318,14 +347,17 @@ function workout(){
   const done=state.draft.exercises.flatMap(e=>e.sets).filter(Boolean).length;
   const total=state.draft.exercises.flatMap(e=>e.sets).length;
   const swapsRemaining=Math.max(0,MAX_SWAPS_PER_QUEST-state.draft.swapsUsed);
-  return shell(`<h1 class="page-title">Strength Quest ${state.routine}</h1><p class="page-sub">${activeRoutines()[state.routine].title} · ${equipmentModes[state.equipmentMode].label} · ${difficultyModes[state.difficulty].label}</p><div class="routine-banner"><div><b>Quest progress</b><span>${done} of ${total} sets confirmed</span></div><div class="reward">${Math.round(done/total*100)}%</div></div><div class="swap-limit ${swapsRemaining===0?'exhausted':''}"><span>↻ Exercise swaps</span><b>${swapsRemaining} of ${MAX_SWAPS_PER_QUEST} remaining</b></div>${state.draft.exercises.map((ex,ei)=>exerciseCard(ex,ei)).join('')}<div class="workout-actions"><button class="primary" data-finish ${done<total?'disabled style="opacity:.42"':''}>COMPLETE QUEST · +100 XP</button></div>`);
+  const finisher=homeFinishers[state.routine];
+  const finisherHtml=state.equipmentMode==='home'?`<section class="finisher-card ${state.draft.finisherDone?'complete':''}"><div class="finisher-head"><div class="finisher-icon">⚡</div><div><span>OPTIONAL · 4 MINUTES · +10 XP</span><h2>${finisher.name}</h2></div></div><p>Complete ${finisher.rounds} rounds:</p><ol>${finisher.moves.map(move=>`<li>${move}</li>`).join('')}</ol><div class="finisher-alternative"><b>LOW-IMPACT OPTION</b><span>${finisher.alternative}</span></div><button class="secondary ${state.draft.finisherDone?'completed':''}" data-finisher>${state.draft.finisherDone?'✓ FINISHER COMPLETE':'CONFIRM FINISHER'}</button></section>`:'';
+  const questXp=100+(state.draft.finisherDone?10:0);
+  return shell(`<h1 class="page-title">Strength Quest ${state.routine}</h1><p class="page-sub">${activeRoutines()[state.routine].title} · ${equipmentModes[state.equipmentMode].label} · ${difficultyModes[state.difficulty].label}</p><div class="routine-banner"><div><b>Quest progress</b><span>${done} of ${total} sets confirmed</span></div><div class="reward">${Math.round(done/total*100)}%</div></div><div class="swap-limit ${swapsRemaining===0?'exhausted':''}"><span>↻ Exercise swaps</span><b>${swapsRemaining} of ${MAX_SWAPS_PER_QUEST} remaining</b></div>${state.draft.exercises.map((ex,ei)=>exerciseCard(ex,ei)).join('')}${finisherHtml}<div class="workout-actions"><button class="primary" data-finish ${done<total?'disabled style="opacity:.42"':''}>COMPLETE QUEST · +${questXp} XP</button></div>`);
 }
 function alternativesFor(ex){
   const all=Object.values(activeRoutines()).flatMap(r=>r.exercises);
   const compatible={body:['body','core'],core:['core','body','carry'],carry:['carry','core','lower'],upper:['upper'],lower:['lower']}[ex.group]||[ex.group];
   const unique=[];
   for(const option of all){
-    if(compatible.includes(option.group) && option.name!==ex.name && !unique.some(item=>item.name===option.name)) unique.push(option);
+    if(compatible.includes(option.group) && option.name!==exerciseKey(ex) && !unique.some(item=>item.name===option.name)) unique.push(option);
   }
   return unique.slice(0,4);
 }
@@ -364,7 +396,10 @@ function exerciseCard(ex,ei){
   const alternatives=alternativesFor(ex);
   const swapsRemaining=Math.max(0,MAX_SWAPS_PER_QUEST-(state.draft.swapsUsed||0));
   const swapHtml=swapOpen===ei&&swapsRemaining>0?`<div class="swap-panel"><span>Choose an alternative · ${swapsRemaining} swap${swapsRemaining===1?'':'s'} remaining</span>${alternatives.length?alternatives.map((option,oi)=>`<button data-swap-choice data-e="${ei}" data-o="${oi}">${esc(option.name)}</button>`).join(''):'<p>No equivalent exercise is available in this program.</p>'}</div>`:'';
-  return `<article class="exercise"><div class="exercise-top"><div class="exercise-num">${String(ei+1).padStart(2,'0')}</div><div class="exercise-name"><b>${ex.name}</b><span>${ex.sets.length} sets · ${prescription(ex)}</span></div><div class="exercise-tools"><button class="info-button" data-info data-e="${ei}" aria-label="Instructions for ${esc(ex.name)}">INFO</button><button class="swap-button" data-swap data-e="${ei}" aria-label="Replace ${esc(ex.name)}" ${swapsRemaining===0?'disabled':''}>${swapsRemaining===0?'LIMIT':'SWAP'}</button></div></div>${swapHtml}${ex.sets.map((done,si)=>`<div class="confirm-row"><div><span>SET ${si+1}</span><b>${prescription(ex)}</b></div><button class="set-check ${done?'done':''}" data-set data-e="${ei}" data-s="${si}" aria-label="Confirm set ${si+1}">${done?'✓':'○'}</button></div>`).join('')}</article>`;
+  const exerciseDone=ex.sets.every(Boolean);
+  const effortHtml=state.equipmentMode==='home'&&exerciseDone?`<div class="effort-check"><span>HOW DID THIS EXERCISE FEEL?</span><div>${[['easy','Too easy'],['right','Challenging'],['hard','Too difficult']].map(([value,label])=>`<button class="${ex.effort===value?'active':''}" data-effort="${value}" data-e="${ei}">${label}</button>`).join('')}</div><p>Your answer adjusts this exercise the next time it appears.</p></div>`:'';
+  const restHtml=state.equipmentMode==='home'?`<small class="rest-guide">${restGuidance(ex)}</small>`:'';
+  return `<article class="exercise"><div class="exercise-top"><div class="exercise-num">${String(ei+1).padStart(2,'0')}</div><div class="exercise-name"><b>${ex.name}</b><span>${ex.sets.length} sets · ${prescription(ex)}</span>${restHtml}</div><div class="exercise-tools"><button class="info-button" data-info data-e="${ei}" aria-label="Instructions for ${esc(ex.name)}">INFO</button><button class="swap-button" data-swap data-e="${ei}" aria-label="Replace ${esc(ex.name)}" ${swapsRemaining===0?'disabled':''}>${swapsRemaining===0?'LIMIT':'SWAP'}</button></div></div>${swapHtml}${ex.sets.map((done,si)=>`<div class="confirm-row"><div><span>SET ${si+1}</span><b>${prescription(ex)}</b></div><button class="set-check ${done?'done':''}" data-set data-e="${ei}" data-s="${si}" aria-label="Confirm set ${si+1}">${done?'✓':'○'}</button></div>`).join('')}${effortHtml}</article>`;
 }
 function showExerciseGuide(index){
   const exercise=state.draft?.exercises[index];if(!exercise)return;
@@ -482,7 +517,7 @@ function playSound(type){
 function progress(){
   const groups=achievementGroups(); const all=groups.flatMap(g=>g[1]); const unlocked=all.filter(a=>a[3]>=a[4]).length;
   const achievementHtml=groups.map(([title,items])=>`<section class="achievement-section"><div class="achievement-category"><h3>${title}</h3><span>${items.filter(a=>a[3]>=a[4]).length}/${items.length}</span></div><div class="achievement-grid">${items.map(a=>`<div class="badge ${a[3]>=a[4]?'':'locked'}"><i>${a[0]}</i><b>${a[1]}</b><span>${a[2]}</span><em>${Math.min(a[3],a[4])} / ${a[4]}</em></div>`).join('')}</div></section>`).join('');
-  return shell(`<h1 class="page-title">Progress</h1><p class="page-sub">Every completed quest makes the next one possible.</p><div class="section-head"><h2>Achievements</h2><span>${unlocked}/${all.length} unlocked</span></div>${achievementHtml}<div class="section-head"><h2>Quest history</h2><span>Newest first</span></div>${state.history.length?state.history.slice(0,12).map(h=>`<div class="history-row"><time>${new Date(h.date).toLocaleDateString(undefined,{month:'short',day:'numeric'})}</time><b>Strength Quest ${h.routine}</b><span>+100 XP</span></div>`).join(''):`<div class="empty">Your completed workouts will appear here.</div>`}`);
+  return shell(`<h1 class="page-title">Progress</h1><p class="page-sub">Every completed quest makes the next one possible.</p><div class="section-head"><h2>Achievements</h2><span>${unlocked}/${all.length} unlocked</span></div>${achievementHtml}<div class="section-head"><h2>Quest history</h2><span>Newest first</span></div>${state.history.length?state.history.slice(0,12).map(h=>`<div class="history-row"><time>${new Date(h.date).toLocaleDateString(undefined,{month:'short',day:'numeric'})}</time><b>Strength Quest ${h.routine}${h.finisherCompleted?' · Finisher':''}</b><span>+${100+(h.finisherCompleted?10:0)} XP</span></div>`).join(''):`<div class="empty">Your completed workouts will appear here.</div>`}`);
 }
 function chronicle(){
   const hunterLevel=level();const unlocked=chronicleEntries.filter(entry=>hunterLevel>=entry.level).length;const complete=unlocked===chronicleEntries.length;
@@ -504,11 +539,11 @@ function settings(){
   return shell(`<h1 class="page-title">Settings</h1><p class="page-sub">Your data stays in this browser on this device.</p>
   <div class="settings-card"><h3>Hunter profile</h3><div class="field"><label>HUNTER NAME</label><input id="name" value="${esc(state.name)}" placeholder="Enter your hunter name" maxlength="24" autocomplete="nickname" /></div><button class="primary" data-save-name>SAVE NAME</button></div>
   <div class="settings-card"><h3>Workout equipment</h3><p class="settings-note equipment-help">Your next quest uses only equipment from this program.</p><div class="mode-grid">${modes}</div></div>
-  <div class="settings-card"><h3>Quest difficulty</h3><p class="settings-note equipment-help">Changes sets, repetitions and suggested starting weights. Always prioritise safe form.</p><div class="mode-grid">${difficulties}</div></div>
+  <div class="settings-card"><h3>Quest difficulty</h3><p class="settings-note equipment-help">Changes sets, repetitions, exercise variations and suggested starting weights. Exercise feedback then adapts future targets. Always prioritise safe form.</p><div class="mode-grid">${difficulties}</div></div>
   <div class="settings-card"><h3>Interface theme</h3><p class="settings-note equipment-help">New visual styles unlock as your Hunter reaches Level 100.</p><div class="theme-grid">${themes}</div></div>
   <div class="settings-card setting-row"><div><h3>Quest sounds</h3><p class="settings-note">Set confirmations, quests, levels and achievements.</p></div><button class="toggle ${state.soundEnabled?'on':''}" data-sound role="switch" aria-checked="${state.soundEnabled}"><span></span></button></div>
   <div class="settings-card"><h3>How Ascension works</h3><p class="settings-note equipment-help">Replay the short guide to profiles, quests, training, Bosses and backups.</p><button class="secondary" data-tutorial>OPEN TUTORIAL</button></div>
-  <div class="settings-card"><h3>Progression rules</h3><p class="settings-note">XP requirements rise by 20 every 10 levels, from 200 XP to a permanent 400 XP cap. Strength prescriptions and Side Quests grow gradually, while the Recovery Walk stops increasing at 45 minutes.</p></div>
+  <div class="settings-card"><h3>Progression rules</h3><p class="settings-note">XP requirements rise by 20 every 10 levels, from 200 XP to a permanent 400 XP cap. Home exercise targets adapt to completed difficulty feedback, and optional finishers add 10 XP. Side Quests grow gradually, while the Recovery Walk stops increasing at 45 minutes.</p></div>
   <div class="settings-card"><h3>Backup</h3><div class="button-row"><button class="secondary" data-export>Export data</button><button class="secondary" data-import>Import data</button></div><input type="file" id="file" accept="application/json" hidden /></div>
   <div class="settings-card"><h3>Start over</h3><button class="secondary danger" data-reset>Reset all progress</button></div>`);
 }
@@ -521,11 +556,13 @@ function bind(){
   document.querySelector('[data-warmup-done]')?.addEventListener('click',()=>{state.draft.warmupDone=true;save();render();toast('Warm-up complete')});
   document.querySelector('[data-warmup-skip]')?.addEventListener('click',()=>{state.draft.warmupSkipped=true;save();render()});
   document.querySelectorAll('[data-set]').forEach(b=>b.onclick=()=>{const sets=state.draft.exercises[+b.dataset.e].sets;sets[+b.dataset.s]=!sets[+b.dataset.s];if(sets[+b.dataset.s])playSound('set');save();render()});
+  document.querySelectorAll('[data-effort]').forEach(b=>b.onclick=()=>{state.draft.exercises[+b.dataset.e].effort=b.dataset.effort;save();render();toast('Difficulty feedback saved')});
+  document.querySelector('[data-finisher]')?.addEventListener('click',()=>{state.draft.finisherDone=!state.draft.finisherDone;save();render();if(state.draft.finisherDone){playSound('set');toast('Finisher confirmed · +10 XP with quest')}});
   document.querySelectorAll('[data-swap]').forEach(b=>b.onclick=()=>{if((state.draft.swapsUsed||0)>=MAX_SWAPS_PER_QUEST){swapOpen=null;render();toast('Swap limit reached for this quest');return;}const index=+b.dataset.e;swapOpen=swapOpen===index?null:index;render()});
   document.querySelectorAll('[data-info]').forEach(b=>b.onclick=()=>showExerciseGuide(+b.dataset.e));
   document.querySelectorAll('[data-chronicle]').forEach(b=>b.onclick=()=>showChronicleEntry(+b.dataset.chronicle));
   document.querySelectorAll('[data-quest-detail]').forEach(b=>b.onclick=()=>showQuestDetails(b.dataset.questDetail));
-  document.querySelectorAll('[data-swap-choice]').forEach(b=>b.onclick=()=>{if((state.draft.swapsUsed||0)>=MAX_SWAPS_PER_QUEST){swapOpen=null;render();toast('Swap limit reached for this quest');return;}const index=+b.dataset.e;const current=state.draft.exercises[index];const option=alternativesFor(current)[+b.dataset.o];if(!option)return;state.draft.exercises[index]={...option,sets:[...current.sets]};state.draft.swapsUsed=(state.draft.swapsUsed||0)+1;const remaining=MAX_SWAPS_PER_QUEST-state.draft.swapsUsed;swapOpen=null;save();render();toast(`Replaced with ${option.name} · ${remaining} swap${remaining===1?'':'s'} left`)});
+  document.querySelectorAll('[data-swap-choice]').forEach(b=>b.onclick=()=>{if((state.draft.swapsUsed||0)>=MAX_SWAPS_PER_QUEST){swapOpen=null;render();toast('Swap limit reached for this quest');return;}const index=+b.dataset.e;const current=state.draft.exercises[index];const option=alternativesFor(current)[+b.dataset.o];if(!option)return;state.draft.exercises[index]=prepareDraftExercise(option,current.sets.length,current.sets);state.draft.swapsUsed=(state.draft.swapsUsed||0)+1;const remaining=MAX_SWAPS_PER_QUEST-state.draft.swapsUsed;swapOpen=null;save();render();toast(`Replaced with ${option.name} · ${remaining} swap${remaining===1?'':'s'} left`)});
   document.querySelector('[data-finish]')?.addEventListener('click',finish);
   document.querySelector('[data-recovery]')?.addEventListener('click',completeRecovery);
   document.querySelector('[data-side-quest]')?.addEventListener('click',completeSideQuest);
@@ -559,10 +596,14 @@ function finish(){
   const now=new Date(); const prev=state.lastWorkout?new Date(state.lastWorkout):null;
   const dayGap=prev?Math.floor((new Date(now.toDateString())-new Date(prev.toDateString()))/86400000):null;
   state.streak=dayGap===1?state.streak+1:dayGap===0?state.streak:1;
-  state.draft.exercises.forEach(ex=>{const weight=weightTarget(ex);if(weight && weight>(state.bests[ex.name]||0))state.bests[ex.name]=weight;});
+  state.draft.exercises.forEach(ex=>{
+    const weight=weightTarget(ex);if(weight && weight>(state.bests[ex.name]||0))state.bests[ex.name]=weight;
+    if(state.equipmentMode==='home'&&ex.effort){const key=exerciseKey(ex);const current=Number(state.exerciseAdjustments[key])||0;const change=ex.effort==='easy'?1:ex.effort==='hard'?-1:0;state.exerciseAdjustments[key]=Math.max(-3,Math.min(4,current+change));}
+  });
   const setsConfirmed=state.draft.exercises.reduce((sum,exercise)=>sum+exercise.sets.filter(Boolean).length,0);
-  state.history.unshift({date:now.toISOString(),routine:state.routine,equipmentMode:state.equipmentMode,difficulty:state.difficulty,warmupCompleted:Boolean(state.draft.warmupDone),setsConfirmed}); state.lastWorkout=now.toISOString(); state.workoutCount++; state.xp+=100;
-  state.routine=routineOrder[(routineOrder.indexOf(state.routine)+1)%routineOrder.length]; state.draft=null; swapOpen=null; save(); page='home'; render(); playSound('quest'); toast('Quest complete · +100 XP'); queueProgressRewards(before);
+  const finisherCompleted=state.equipmentMode==='home'&&Boolean(state.draft.finisherDone);const earnedXp=100+(finisherCompleted?10:0);
+  state.history.unshift({date:now.toISOString(),routine:state.routine,equipmentMode:state.equipmentMode,difficulty:state.difficulty,warmupCompleted:Boolean(state.draft.warmupDone),finisherCompleted,setsConfirmed}); state.lastWorkout=now.toISOString(); state.workoutCount++; state.xp+=earnedXp;
+  state.routine=routineOrder[(routineOrder.indexOf(state.routine)+1)%routineOrder.length]; state.draft=null; swapOpen=null; save(); page='home'; render(); playSound('quest'); toast(`Quest complete · +${earnedXp} XP`); queueProgressRewards(before);
 }
 function exportData(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ascension-backup.json';a.click();URL.revokeObjectURL(a.href);}
 function importData(e){
@@ -570,7 +611,7 @@ function importData(e){
   r.onload=()=>{try{
     const restored=JSON.parse(r.result);const migrated=migrateLegacyXp({...initial,...restored},restored.xpSystemVersion!==2);
     state={...migrated,draft:null,onboardingComplete:true,tutorialComplete:restored.tutorialComplete===undefined?true:Boolean(restored.tutorialComplete)};
-    if(state.name==='Mahmoud')state.name='';if(!routineOrder.includes(state.routine))state.routine='A';if(!equipmentModes[state.equipmentMode])state.equipmentMode='home';if(!difficultyModes[state.difficulty])state.difficulty='intermediate';if(!themeModes[state.theme]||level()<themeModes[state.theme].level)state.theme='shadow';if(!state.bossClaims||typeof state.bossClaims!=='object')state.bossClaims={};if(!Number.isFinite(state.bossWins))state.bossWins=0;if(restored.eternalCelebrated===undefined&&level()>=100)state.eternalCelebrated=true;
+    if(state.name==='Mahmoud')state.name='';if(!routineOrder.includes(state.routine))state.routine='A';if(!equipmentModes[state.equipmentMode])state.equipmentMode='home';if(!difficultyModes[state.difficulty])state.difficulty='intermediate';if(!themeModes[state.theme]||level()<themeModes[state.theme].level)state.theme='shadow';if(!state.bossClaims||typeof state.bossClaims!=='object')state.bossClaims={};if(!Number.isFinite(state.bossWins))state.bossWins=0;if(!state.exerciseAdjustments||typeof state.exerciseAdjustments!=='object')state.exerciseAdjustments={};if(restored.eternalCelebrated===undefined&&level()>=100)state.eternalCelebrated=true;
     save();page='home';render();toast('Backup restored');
   }catch{alert('That backup file could not be read.')}};r.readAsText(f);
 }
@@ -593,7 +634,7 @@ function showTutorial(force=false){
   const pages=[
     {icon:'◈',step:'01',title:'Your Hunter Profile',text:'Complete quests to earn XP, increase your level, evolve your emblem, unlock themes, and reveal a Chronicle entry every 10 levels.'},
     {icon:'⚔',step:'02',title:'Complete Quests',text:'Strength Quests build progression. Recovery Walks and optional Daily Side Quests provide smaller XP rewards.'},
-    {icon:'◇',step:'03',title:'Train Safely',text:'Choose an appropriate difficulty, complete the warm-up, open INFO for guidance, and SWAP any unsuitable exercise.'},
+    {icon:'◇',step:'03',title:'Train Safely',text:'Choose an appropriate difficulty, complete the warm-up, follow rest guidance, open INFO for form cues, and rate completed exercises so future targets adapt.'},
     {icon:'♜',step:'04',title:'Defeat Weekly Bosses',text:'Each Monday begins a new Boss challenge. Complete its target and claim 200 bonus XP before the week ends.'},
     {icon:'▣',step:'05',title:'Protect Your Progress',text:'Your data stays on this device. Export a backup regularly from Settings so it can be restored if your phone changes.'}
   ];
