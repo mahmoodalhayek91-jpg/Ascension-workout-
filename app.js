@@ -154,11 +154,64 @@ const eternalMilestones = [
   {level:250,icon:'☄',name:'Eternal Welcome',description:'A special welcome effect for a veteran Hunter.'},
   {level:500,icon:'∞',name:'Beyond the Summit',description:'The ultimate long-term Ascension achievement.'}
 ];
+const regions = [
+  {level:1,name:'The Awakening Grounds',icon:'◇',description:'Where resolve first takes form.'},
+  {level:11,name:'Ironwood Pass',icon:'♧',description:'A path shaped by steady resistance.'},
+  {level:21,name:'The Shattered Arena',icon:'⬡',description:'Where limits begin to fracture.'},
+  {level:31,name:'Emberfall Bastion',icon:'♨',description:'A fortress forged through persistence.'},
+  {level:41,name:'The Hollow Mountains',icon:'△',description:'A climb that rewards patience.'},
+  {level:51,name:'Stormwatch Frontier',icon:'ϟ',description:'Discipline stands against the storm.'},
+  {level:61,name:'The Obsidian Expanse',icon:'◆',description:'A quiet realm of enduring strength.'},
+  {level:71,name:'The Celestial Ruins',icon:'✦',description:'Ancient trials reveal a greater path.'},
+  {level:81,name:'The Eternal Gate',icon:'◈',description:'The final threshold draws near.'},
+  {level:91,name:'The Ascendant Citadel',icon:'♚',description:'The summit of the first Ascension.'}
+];
+const attributeInfo = {
+  strength:{icon:'⚔',label:'Strength',description:'Resistance training and completed Strength Quests.'},
+  endurance:{icon:'ϟ',label:'Endurance',description:'Recovery Walks, finishers and sustained movement.'},
+  vitality:{icon:'♥',label:'Vitality',description:'Balanced training, recovery and consistency.'},
+  agility:{icon:'◇',label:'Agility',description:'Mobility, control and Daily Side Quests.'},
+  discipline:{icon:'✦',label:'Discipline',description:'Showing up consistently and defeating Weekly Bosses.'}
+};
+const itemCatalog = {
+  vanguardRing:{name:'Vanguard Ring',icon:'○',rarity:'uncommon',slot:'sigil',description:'A ring awarded to Hunters who establish their training path.'},
+  ironSigil:{name:'Iron Sigil',icon:'⬡',rarity:'rare',slot:'sigil',description:'A crest recovered from a defeated Weekly Boss.'},
+  recoveryCharm:{name:'Recovery Charm',icon:'☾',rarity:'uncommon',slot:'charm',description:'A reminder that restoration is part of progression.'},
+  pathwayToken:{name:'Pathway Token',icon:'↻',rarity:'rare',slot:'charm',description:'A cosmetic charm honoring adaptable Hunters. The three-swap limit remains unchanged.'},
+  emberAura:{name:'Ember Aura',icon:'♨',rarity:'epic',slot:'aura',description:'A warm aura forged in Emberfall Bastion.'},
+  celestialAura:{name:'Celestial Aura',icon:'✧',rarity:'epic',slot:'aura',description:'A luminous aura discovered among the Celestial Ruins.'},
+  ascendantCloak:{name:'Ascendant Cloak',icon:'♚',rarity:'legendary',slot:'aura',description:'A permanent mantle earned at Level 100.'},
+  awakeningRelic:{name:'Relic of Awakening',icon:'◇',rarity:'rare',slot:'relic',description:'The first preserved fragment of the Chronicle.'},
+  eternalHalo:{name:'Eternal Halo',icon:'∞',rarity:'eternal',slot:'aura',description:'A post-Ascension cosmetic forged from Eternal Shards.'},
+  sovereignFrame:{name:'Sovereign Frame',icon:'◈',rarity:'eternal',slot:'sigil',description:'An Eternal border for the Hunter profile.'},
+  forgeCrest:{name:'Forge Crest',icon:'⚔',rarity:'rare',slot:'sigil',description:'A profile crest unlocked through the Path of Power.'},
+  pulseAura:{name:'Pulse Aura',icon:'ϟ',rarity:'epic',slot:'aura',description:'An aura carried by Hunters who master optional finishers.'},
+  restorationCharm:{name:'Restoration Charm',icon:'☾',rarity:'rare',slot:'charm',description:'A charm unlocked through the Path of Endurance.'},
+  pathfinderRelic:{name:'Pathfinder Relic',icon:'△',rarity:'epic',slot:'relic',description:'Reveals the identity of the next sealed region.'},
+  tacticianSigil:{name:'Tactician Sigil',icon:'↻',rarity:'rare',slot:'sigil',description:'A distinction for adaptable training without increasing the swap limit.'}
+};
+const lootPool = ['recoveryCharm','vanguardRing','pathwayToken','ironSigil','emberAura','celestialAura'];
+const skills = {
+  powerI:{path:'Power',name:'Prepared Power',icon:'⚔',level:5,description:'Unlocks the equipable Forge Crest.',rewardItem:'forgeCrest'},
+  powerII:{path:'Power',name:'Finisher Mastery',icon:'ϟ',level:20,requires:'powerI',description:'Unlocks the equipable Pulse Aura.',rewardItem:'pulseAura'},
+  enduranceI:{path:'Endurance',name:'Restoration Sense',icon:'☾',level:10,description:'Unlocks the equipable Restoration Charm.',rewardItem:'restorationCharm'},
+  enduranceII:{path:'Endurance',name:'Pathfinder',icon:'◇',level:30,requires:'enduranceI',description:'Unlocks a relic that reveals the next sealed region.',rewardItem:'pathfinderRelic'},
+  resolveI:{path:'Resolve',name:'Flexible Tactics',icon:'↻',level:15,description:'Unlocks a tactical sigil while preserving the three-swap limit.',rewardItem:'tacticianSigil'},
+  resolveII:{path:'Resolve',name:'Treasure Sense',icon:'◆',level:35,requires:'resolveI',description:'Adds a special glow to unopened loot chests.'}
+};
+const bossLore = {
+  'Iron Vanguard':'A silent guardian that yields only to consistent strength.',
+  'Trial of Paths':'A shifting presence that tests whether a Hunter can master more than one path.',
+  'Ritual of Readiness':'An ancient sentinel that respects preparation before power.',
+  'Trial of Resolve':'A relentless trial measured one controlled set at a time.'
+};
 function activeRoutines(){ return equipmentModes[state.equipmentMode].routines; }
 
-const initial = { name: '', xp: 0, xpSystemVersion:2, streak: 0, lastWorkout: null, workoutCount: 0, routine: 'A', equipmentMode: 'home', difficulty: 'beginner', theme: 'shadow', soundEnabled: false, onboardingComplete: false, tutorialComplete:false, eternalCelebrated:false, history: [], bests: {}, exerciseAdjustments:{}, draft: null, recoveryDate: null, recoveryCount: 0, sideQuestDate:null, sideQuestCount:0, bossClaims:{}, bossWins:0 };
+const initial = { name: '', xp: 0, xpSystemVersion:2, rpgSystemVersion:1, streak: 0, lastWorkout: null, workoutCount: 0, routine: 'A', equipmentMode: 'home', difficulty: 'beginner', theme: 'shadow', soundEnabled: false, onboardingComplete: false, tutorialComplete:false, eternalCelebrated:false, history: [], bests: {}, exerciseAdjustments:{}, draft: null, recoveryDate: null, recoveryCount: 0, sideQuestDate:null, sideQuestCount:0, bossClaims:{}, bossWins:0, attributes:{strength:0,endurance:0,vitality:0,agility:0,discipline:0}, inventory:{}, chests:0, chestsOpened:0, chestProgress:0, equipped:{sigil:null,charm:null,aura:null,relic:null}, skills:{}, encounterDate:null, bossArchive:{}, shardsSpent:0, eternalPurchases:[], lastReward:null };
 let state = load();
 let page = 'home';
+let progressTab = 'attributes';
+let realmTab = 'map';
 let swapOpen = null;
 let celebrationQueue = [];
 let celebrationActive = false;
@@ -167,7 +220,7 @@ function load() {
   try {
     const raw = localStorage.getItem('ascension-state');
     const stored = JSON.parse(raw || '{}');
-    const merged = migrateLegacyXp({ ...initial, ...stored },Boolean(raw)&&stored.xpSystemVersion!==2);
+    const merged = migrateLegacyXp({ ...JSON.parse(JSON.stringify(initial)), ...stored },Boolean(raw)&&stored.xpSystemVersion!==2);
     if (merged.name === 'Mahmoud') merged.name = '';
     if (!routineOrder.includes(merged.routine)) merged.routine = 'A';
     if (!equipmentModes[merged.equipmentMode]) merged.equipmentMode = 'home';
@@ -183,8 +236,33 @@ function load() {
     if (merged.draft && !merged.draft.version) merged.draft = null;
     if (merged.draft && !Number.isFinite(merged.draft.swapsUsed)) merged.draft.swapsUsed = 0;
     if (stored.recoveryCount === undefined && merged.recoveryDate) merged.recoveryCount = 1;
+    normalizeRpgState(merged,stored);
     return merged;
-  } catch { return { ...initial, history:[], bests:{}, bossClaims:{} }; }
+  } catch { return normalizeRpgState(JSON.parse(JSON.stringify(initial)),{}); }
+}
+function normalizeRpgState(record,stored={}){
+  const finishers=(record.history||[]).filter(item=>item.finisherCompleted).length;
+  const fallback={strength:(record.workoutCount||0)*3,endurance:(record.recoveryCount||0)+finishers,vitality:(record.recoveryCount||0)+Math.floor((record.workoutCount||0)/3),agility:record.sideQuestCount||0,discipline:(record.workoutCount||0)+(record.bossWins||0)*2};
+  record.attributes=stored.attributes&&typeof stored.attributes==='object'?{...fallback,...stored.attributes}:fallback;
+  for(const key of Object.keys(attributeInfo))record.attributes[key]=Math.max(0,Number(record.attributes[key])||0);
+  if(!record.inventory||typeof record.inventory!=='object')record.inventory={};
+  record.equipped={sigil:null,charm:null,aura:null,relic:null,...(record.equipped&&typeof record.equipped==='object'?record.equipped:{})};
+  if(!record.skills||typeof record.skills!=='object')record.skills={};
+  if(!record.bossArchive||typeof record.bossArchive!=='object')record.bossArchive={};
+  if(!Array.isArray(record.eternalPurchases))record.eternalPurchases=[];
+  ['chests','chestsOpened','chestProgress','shardsSpent'].forEach(key=>record[key]=Math.max(0,Number(record[key])||0));
+  if(stored.rpgSystemVersion===undefined){
+    if((record.workoutCount||0)>=10)record.inventory.vanguardRing=Math.max(1,record.inventory.vanguardRing||0);
+    if((record.recoveryCount||0)>=10)record.inventory.recoveryCharm=Math.max(1,record.inventory.recoveryCharm||0);
+    if(levelForXp(record.xp)>=10)record.inventory.awakeningRelic=Math.max(1,record.inventory.awakeningRelic||0);
+    if(levelForXp(record.xp)>=30)record.inventory.emberAura=Math.max(1,record.inventory.emberAura||0);
+    if(levelForXp(record.xp)>=70)record.inventory.celestialAura=Math.max(1,record.inventory.celestialAura||0);
+    if(levelForXp(record.xp)>=100)record.inventory.ascendantCloak=Math.max(1,record.inventory.ascendantCloak||0);
+    record.chests+=Math.floor(levelForXp(record.xp)/10);
+    record.chestProgress=(record.workoutCount||0)%3;
+  }
+  record.rpgSystemVersion=1;
+  return record;
 }
 function save(){ localStorage.setItem('ascension-state', JSON.stringify(state)); }
 function xpNeededForLevel(value){return Math.min(400,200+Math.floor(Math.max(1,value)/10)*20);}
@@ -199,10 +277,23 @@ function level(){ return levelForXp(state.xp); }
 function levelXp(){ return state.xp-xpAtStartOfLevel(level()); }
 function levelRequirement(){return xpNeededForLevel(level());}
 function rank(){ const l=level(); return l>=100?'Eternal':l>=20?'Ascendant':l>=15?'Apex':l>=10?'Elite':l>=5?'Vanguard':'Initiate'; }
-function eternalShards(){return Math.max(0,level()-100);}
+function eternalShards(){return Math.max(0,level()-100-(state.shardsSpent||0));}
 function ascensionStars(){return Math.max(0,Math.floor((level()-100)/10));}
 function titleForLevel(value=level()){return titleMilestones.reduce((title,[required,name])=>value>=required?name:title,'The Awakened');}
 function emblemForLevel(value=level()){return emblemStages.reduce((emblem,stage)=>value>=stage.level?stage:emblem,emblemStages[0]);}
+function currentRegion(value=level()){return regions.reduce((region,item)=>value>=item.level?item:region,regions[0]);}
+function nextRegion(value=level()){return regions.find(item=>item.level>value)||null;}
+function questRank(value=level()){return value>=100?'ETERNAL':value>=80?'A':value>=60?'B':value>=40?'C':value>=20?'D':'E';}
+function attributeGrade(value){return value>=100?'Ascendant':value>=75?'Elite':value>=50?'Formidable':value>=25?'Trained':'Novice';}
+function addAttribute(key,amount){state.attributes[key]=Math.max(0,(state.attributes[key]||0)+amount);}
+function ownedItemIds(){return Object.keys(state.inventory).filter(id=>state.inventory[id]>0&&itemCatalog[id]);}
+function addItem(id,quantity=1){if(!itemCatalog[id])return;state.inventory[id]=(state.inventory[id]||0)+quantity;}
+function skillPointsEarned(){return Math.floor(level()/5);}
+function skillPointsSpent(){return Object.values(state.skills).filter(Boolean).length;}
+function availableSkillPoints(){return Math.max(0,skillPointsEarned()-skillPointsSpent());}
+function hasEffect(effect){return Object.entries(state.skills).some(([id,on])=>on&&skills[id]?.effect===effect)||Object.values(state.equipped).some(id=>itemCatalog[id]?.effect===effect);}
+function maxQuestSwaps(){return MAX_SWAPS_PER_QUEST;}
+function inventoryCount(){return ownedItemIds().reduce((sum,id)=>sum+(state.inventory[id]||0),0);}
 function localDay(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 function recoveryMinutes(){ return Math.min(45, 10 + Math.floor(level()/10)*5); }
 function dailySideQuest(){
@@ -296,30 +387,44 @@ function currentBoss(){
 }
 function esc(v=''){ return String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 function shell(content){ return `<main class="shell"><header class="topbar"><div><div class="eyebrow">Personal growth protocol</div><div class="brand">ASCENSION</div></div><button class="icon-btn" data-page="settings" aria-label="Settings">⚙</button></header>${content}</main>${nav()}<div id="toast" class="toast"></div>`; }
-function nav(){ return `<nav class="nav">${[['home','⌂','Home'],['workout','⚔','Quest'],['progress','◈','Progress'],['chronicle','▤','Chronicle'],['settings','⚙','Settings']].map(([id,icon,label])=>`<button data-page="${id}" class="${page===id?'active':''}"><i>${icon}</i>${label}</button>`).join('')}</nav>`; }
+function nav(){const questReady=state.recoveryDate!==localDay()||state.sideQuestDate!==localDay();return `<nav class="nav">${[['home','⌂','Home'],['workout','⚔','Quest'],['progress','◈','Progress'],['realm','▤','Realm'],['settings','⚙','Settings']].map(([id,icon,label])=>`<button data-page="${id}" class="${page===id?'active':''}"><i>${icon}${id==='workout'&&questReady?'<em class="nav-dot"></em>':''}</i>${label}</button>`).join('')}</nav>`; }
+
+function randomEncounter(){
+  const encounters=[
+    {icon:'◇',name:'Stillness Trial',description:'Hold a comfortable plank variation for 20 seconds.',attribute:'vitality'},
+    {icon:'ϟ',name:'Swift Passage',description:'March briskly in place for 2 minutes.',attribute:'endurance'},
+    {icon:'☾',name:'Mobility Shrine',description:'Complete 3 minutes of gentle shoulder and hip mobility.',attribute:'agility'},
+    {icon:'⚔',name:'Control Trial',description:'Complete 8 slow bodyweight squats through a comfortable range.',attribute:'strength'}
+  ];
+  const [year,month,day]=localDay().split('-').map(Number);return encounters[Math.floor(Date.UTC(year,month-1,day)/86400000)%encounters.length];
+}
 
 function home(){
-  const next = state.routine;
-  const current = activeRoutines();
-  const recoveryDone = state.recoveryDate === localDay();
-  const sideQuestDone = state.sideQuestDate === localDay();
-  const sideQuest = dailySideQuest();
   const emblem=emblemForLevel();
-  const boss=currentBoss();
   const hunterLevel=level();
-  const heroClasses=[hunterLevel>=125?'legacy-border':'',hunterLevel>=150?'eternal-aura':''].filter(Boolean).join(' ');
+  const region=currentRegion();const upcoming=nextRegion();
+  const equippedAura=state.equipped.aura?`item-${state.equipped.aura}`:'';
+  const heroClasses=[hunterLevel>=125?'legacy-border':'',hunterLevel>=150?'eternal-aura':'',equippedAura].filter(Boolean).join(' ');
   const eternalSummary=hunterLevel>=100?`<div class="eternal-summary"><div><span>ETERNAL SHARDS</span><b>◆ ${eternalShards()}</b></div><div><span>ASCENSION STARS</span><b>★ ${ascensionStars()}</b></div></div>`:'';
-  return shell(`<section class="hero ${heroClasses}"><div class="profile-row"><div class="level-medal emblem-${emblem.id} ${hunterLevel>=200?'legendary-variation':''}" title="${emblem.name}"><i>${emblem.glyph}</i><div><span>LEVEL</span><b>${hunterLevel}</b></div></div><div class="profile-copy"><h1>${esc(state.name || 'Hunter')}</h1><div class="hunter-title">${esc(titleForLevel())}</div><div class="rank">Current rank · <strong>${rank()}</strong></div></div></div><div class="xp-line"><span>LEVEL PROGRESS</span><span>${levelXp()} / ${levelRequirement()} XP</span></div><div class="xp-track"><div class="xp-fill" style="width:${Math.min(100,levelXp()/levelRequirement()*100)}%"></div></div>${eternalSummary}<div class="stats"><div class="stat"><b>${state.streak}</b><span>Streak</span></div><div class="stat"><b>${state.workoutCount}</b><span>Quests</span></div><div class="stat"><b>${Object.keys(state.bests).length}</b><span>Records</span></div></div></section>
+  const attributes=Object.entries(attributeInfo).map(([id,item])=>`<div class="attribute-mini"><i>${item.icon}</i><span>${item.label}</span><b>${state.attributes[id]}</b></div>`).join('');
+  const latest=state.lastReward?`<section class="recent-card"><span>RECENT ACCOMPLISHMENT</span><div><i>${state.lastReward.icon||'✦'}</i><p><b>${esc(state.lastReward.title)}</b><small>${esc(state.lastReward.detail)}</small></p></div></section>`:`<section class="recent-card muted"><span>RECENT ACCOMPLISHMENT</span><div><i>◇</i><p><b>Your record awaits</b><small>Complete training to leave your first mark.</small></p></div></section>`;
+  return shell(`<section class="hero ${heroClasses}"><button class="inventory-shortcut ${state.chests?'has-loot':''}" data-inventory aria-label="Open Inventory">▣${state.chests?`<em>${state.chests}</em>`:''}</button><div class="profile-row"><div class="level-medal emblem-${emblem.id} ${hunterLevel>=200?'legendary-variation':''}" title="${emblem.name}"><i>${emblem.glyph}</i><div><span>LEVEL</span><b>${hunterLevel}</b></div></div><div class="profile-copy"><h1>${esc(state.name || 'Hunter')}</h1><div class="hunter-title">${esc(titleForLevel())}</div><div class="rank">${questRank()}-Rank · <strong>${rank()}</strong></div></div></div><div class="xp-line"><span>LEVEL PROGRESS</span><span>${levelXp()} / ${levelRequirement()} XP</span></div><div class="xp-track"><div class="xp-fill" style="width:${Math.min(100,levelXp()/levelRequirement()*100)}%"></div></div>${eternalSummary}<div class="stats"><div class="stat"><b>${state.streak}</b><span>Streak</span></div><div class="stat"><b>${unlockedAchievements().length}</b><span>Achievements</span></div><div class="stat"><b>${Object.keys(state.bests).length}</b><span>Records</span></div></div></section>
   <aside class="daily-directive"><div class="directive-mark">✦</div><div><span>DAILY DIRECTIVE</span><p>“${esc(dailyDirective())}”</p></div></aside>
-  <div class="section-head"><h2>Daily quests</h2><span>${new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</span></div>
-  <div class="mode-chip">⌂ ${equipmentModes[state.equipmentMode].label} · ${difficultyModes[state.difficulty].label}</div>
-  <article class="quest"><div class="quest-icon">⚔</div><div class="quest-body"><h3>Strength Quest ${next} · ${current[next].title}</h3><p>${current[next].exercises.map(x=>x.name).slice(0,3).join(' · ')}</p></div><div class="reward">+100 XP</div></article>
-  <button class="primary" data-start>BEGIN STRENGTH QUEST</button>
-  <button class="quest recovery-quest quest-detail-card" data-quest-detail="recovery" aria-label="View Recovery Walk details"><div class="quest-icon">◌</div><div class="quest-body"><h3>Recovery Walk · ${recoveryMinutes()} minutes</h3><p>Comfortable pace · increases every 10 levels</p></div><div class="quest-meta"><div class="reward">+20 XP</div><span class="detail-chevron">›</span></div></button>
-  <button class="secondary ${recoveryDone?'completed':''}" data-recovery ${recoveryDone?'disabled':''}>${recoveryDone?'✓ RECOVERY COMPLETE TODAY':'CONFIRM RECOVERY WALK'}</button>
-  <button class="quest side-quest quest-detail-card" data-quest-detail="side" aria-label="View Daily Side Quest details"><div class="quest-icon">${sideQuest.icon}</div><div class="quest-body"><h3>Side Quest · ${sideQuest.name}</h3><p>${sideQuest.description}</p></div><div class="quest-meta"><div class="reward">+15 XP</div><span class="detail-chevron">›</span></div></button>
-  <button class="secondary ${sideQuestDone?'completed':''}" data-side-quest ${sideQuestDone?'disabled':''}>${sideQuestDone?'✓ SIDE QUEST COMPLETE':'CONFIRM SIDE QUEST'}</button>
-  <div class="section-head"><h2>Weekly Boss</h2><span>Resets Monday</span></div><article class="boss-card ${boss.complete?'complete':''}"><div class="boss-icon">${boss.icon}</div><div class="boss-copy"><div class="boss-label">WEEKLY RAID</div><h3>${boss.name}</h3><p>${boss.description}</p><div class="boss-progress"><div style="width:${Math.round(boss.value/boss.target*100)}%"></div></div><span>${boss.value} / ${boss.target} ${boss.unit}</span></div><div class="boss-reward">+200<br>XP</div></article><button class="${boss.complete&&!boss.claimed?'primary':'secondary'} ${boss.claimed?'completed':''}" data-boss-claim ${!boss.complete||boss.claimed?'disabled':''}>${boss.claimed?'✓ BOSS DEFEATED':boss.complete?'CLAIM 200 XP':'BOSS IN PROGRESS'}</button>`);
+  <section class="realm-preview"><div class="realm-preview-icon">${region.icon}</div><div><span>CURRENT REGION</span><h2>${region.name}</h2><p>${region.description}</p></div><button data-page="realm" aria-label="Open Realm">›</button><div class="realm-progress"><div style="width:${upcoming?Math.min(100,((hunterLevel-region.level)/(upcoming.level-region.level))*100):100}%"></div></div><small>${upcoming?`Level ${hunterLevel} · next region at ${upcoming.level}`:'The first Ascension is complete'}</small></section>
+  <div class="section-head"><h2>Hunter attributes</h2><button class="section-link" data-progress-tab="attributes">View details</button></div><section class="attribute-mini-grid">${attributes}</section>
+  ${latest}
+  <button class="inventory-wide" data-inventory><span>▣</span><div><b>Inventory</b><small>${inventoryCount()} items · ${state.chests} unopened chest${state.chests===1?'':'s'}</small></div><i>›</i></button>`);
+}
+
+function questHub(){
+  const next=state.routine;const current=activeRoutines();const recoveryDone=state.recoveryDate===localDay();const sideQuestDone=state.sideQuestDate===localDay();const encounterDone=state.encounterDate===localDay();const sideQuest=dailySideQuest();const encounter=randomEncounter();const boss=currentBoss();
+  const reward=state.lastReward?`<section class="quest-reward-summary"><button data-dismiss-reward aria-label="Dismiss">×</button><span>LAST REWARD</span><h3>${esc(state.lastReward.title)}</h3><p>${esc(state.lastReward.detail)}</p></section>`:'';
+  return shell(`<h1 class="page-title">Quest Board</h1><p class="page-sub">All training, recovery and challenges are gathered here.</p>${reward}<div class="section-head"><h2>Today’s quests</h2><span>${new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</span></div><div class="mode-chip">${questRank()}-RANK · ${equipmentModes[state.equipmentMode].label} · ${difficultyModes[state.difficulty].label}</div>
+  <article class="quest"><div class="quest-icon">⚔</div><div class="quest-body"><h3>Strength Quest ${next} · ${current[next].title}</h3><p>${current[next].exercises.map(x=>x.name).slice(0,3).join(' · ')}</p></div><div class="reward">+100 XP</div></article><button class="primary" data-start>BEGIN STRENGTH QUEST</button>
+  <button class="quest recovery-quest quest-detail-card" data-quest-detail="recovery"><div class="quest-icon">◌</div><div class="quest-body"><h3>Recovery Walk · ${recoveryMinutes()} minutes</h3><p>Comfortable pace · increases every 10 levels</p></div><div class="quest-meta"><div class="reward">+20 XP</div><span class="detail-chevron">›</span></div></button><button class="secondary ${recoveryDone?'completed':''}" data-recovery ${recoveryDone?'disabled':''}>${recoveryDone?'✓ RECOVERY COMPLETE TODAY':'CONFIRM RECOVERY WALK'}</button>
+  <button class="quest side-quest quest-detail-card" data-quest-detail="side"><div class="quest-icon">${sideQuest.icon}</div><div class="quest-body"><h3>Side Quest · ${sideQuest.name}</h3><p>${sideQuest.description}</p></div><div class="quest-meta"><div class="reward">+15 XP</div><span class="detail-chevron">›</span></div></button><button class="secondary ${sideQuestDone?'completed':''}" data-side-quest ${sideQuestDone?'disabled':''}>${sideQuestDone?'✓ SIDE QUEST COMPLETE':'CONFIRM SIDE QUEST'}</button>
+  <div class="section-head"><h2>Random encounter</h2><span>Optional · daily</span></div><article class="encounter-card ${encounterDone?'complete':''}"><div>${encounter.icon}</div><span><b>${encounter.name}</b><small>${encounter.description}</small><em>+5 XP · +1 ${attributeInfo[encounter.attribute].label}</em></span></article><button class="secondary ${encounterDone?'completed':''}" data-encounter ${encounterDone?'disabled':''}>${encounterDone?'✓ ENCOUNTER COMPLETE':'COMPLETE ENCOUNTER'}</button>
+  <div class="section-head"><h2>Weekly Boss</h2><span>Resets Monday</span></div><article class="boss-card ${boss.complete?'complete':''}"><div class="boss-icon">${boss.icon}</div><div class="boss-copy"><div class="boss-label">WEEKLY RAID</div><h3>${boss.name}</h3><p>${boss.description}</p><div class="boss-progress"><div style="width:${Math.round(boss.value/boss.target*100)}%"></div></div><span>${boss.value} / ${boss.target} ${boss.unit}</span></div><div class="boss-reward">+200<br>XP</div></article><button class="${boss.complete&&!boss.claimed?'primary':'secondary'} ${boss.claimed?'completed':''}" data-boss-claim ${!boss.complete||boss.claimed?'disabled':''}>${boss.claimed?'✓ BOSS DEFEATED':boss.complete?'CLAIM REWARDS':'BOSS IN PROGRESS'}</button>`);
 }
 
 function ensureDraft(){
@@ -336,15 +441,16 @@ function warmup(){
   return shell(`<h1 class="page-title">Warm-up Quest</h1><p class="page-sub">Optional · prepare your joints and practise the movements before adding effort.</p><article class="warmup-card"><div class="warmup-mark">◇</div><h2>Awaken the body</h2><p>Move comfortably. Stop if anything feels painful or unusual.</p><ol>${moves.map(move=>`<li>${move}</li>`).join('')}</ol></article><button class="primary" data-warmup-done>COMPLETE WARM-UP</button><button class="text-button" data-warmup-skip>SKIP FOR TODAY</button>`);
 }
 function workout(){
+  if(!state.draft)return questHub();
   ensureDraft();
   if(!state.draft.warmupDone && !state.draft.warmupSkipped) return warmup();
   const done=state.draft.exercises.flatMap(e=>e.sets).filter(Boolean).length;
   const total=state.draft.exercises.flatMap(e=>e.sets).length;
-  const swapsRemaining=Math.max(0,MAX_SWAPS_PER_QUEST-state.draft.swapsUsed);
+  const swapsRemaining=Math.max(0,maxQuestSwaps()-state.draft.swapsUsed);
   const finisher=homeFinishers[state.routine];
   const finisherHtml=state.equipmentMode==='home'?`<section class="finisher-card ${state.draft.finisherDone?'complete':''}"><div class="finisher-head"><div class="finisher-icon">⚡</div><div><span>OPTIONAL · 4 MINUTES · +10 XP</span><h2>${finisher.name}</h2></div></div><p>Complete ${finisher.rounds} rounds:</p><ol>${finisher.moves.map(move=>`<li>${move}</li>`).join('')}</ol><div class="finisher-alternative"><b>LOW-IMPACT OPTION</b><span>${finisher.alternative}</span></div><button class="secondary ${state.draft.finisherDone?'completed':''}" data-finisher>${state.draft.finisherDone?'✓ FINISHER COMPLETE':'CONFIRM FINISHER'}</button></section>`:'';
   const questXp=100+(state.draft.finisherDone?10:0);
-  return shell(`<h1 class="page-title">Strength Quest ${state.routine}</h1><p class="page-sub">${activeRoutines()[state.routine].title} · ${equipmentModes[state.equipmentMode].label} · ${difficultyModes[state.difficulty].label}</p><div class="routine-banner"><div><b>Quest progress</b><span>${done} of ${total} sets confirmed</span></div><div class="reward">${Math.round(done/total*100)}%</div></div><div class="swap-limit ${swapsRemaining===0?'exhausted':''}"><span>↻ Exercise swaps</span><b>${swapsRemaining} of ${MAX_SWAPS_PER_QUEST} remaining</b></div>${state.draft.exercises.map((ex,ei)=>exerciseCard(ex,ei)).join('')}${finisherHtml}<div class="workout-actions"><button class="primary" data-finish ${done<total?'disabled style="opacity:.42"':''}>COMPLETE QUEST · +${questXp} XP</button></div>`);
+  return shell(`<h1 class="page-title">Strength Quest ${state.routine}</h1><p class="page-sub">${questRank()}-RANK · ${activeRoutines()[state.routine].title} · ${equipmentModes[state.equipmentMode].label} · ${difficultyModes[state.difficulty].label}</p><div class="routine-banner"><div><b>Quest progress</b><span>${done} of ${total} sets confirmed</span></div><div class="reward">${Math.round(done/total*100)}%</div></div><div class="swap-limit ${swapsRemaining===0?'exhausted':''}"><span>↻ Exercise swaps</span><b>${swapsRemaining} of ${maxQuestSwaps()} remaining</b></div>${state.draft.exercises.map((ex,ei)=>exerciseCard(ex,ei)).join('')}${finisherHtml}<section class="reward-preview"><span>QUEST REWARDS</span><b>+${questXp} XP · +3 Strength · +1 Discipline</b><small>Chest progress ${state.chestProgress} / 3</small></section><div class="workout-actions"><button class="primary" data-finish ${done<total?'disabled style="opacity:.42"':''}>COMPLETE QUEST · +${questXp} XP</button></div>`);
 }
 function alternativesFor(ex){
   const all=Object.values(activeRoutines()).flatMap(r=>r.exercises);
@@ -388,7 +494,7 @@ function exerciseGuide(ex){
 }
 function exerciseCard(ex,ei){
   const alternatives=alternativesFor(ex);
-  const swapsRemaining=Math.max(0,MAX_SWAPS_PER_QUEST-(state.draft.swapsUsed||0));
+  const swapsRemaining=Math.max(0,maxQuestSwaps()-(state.draft.swapsUsed||0));
   const swapHtml=swapOpen===ei&&swapsRemaining>0?`<div class="swap-panel"><span>Choose an alternative · ${swapsRemaining} swap${swapsRemaining===1?'':'s'} remaining</span>${alternatives.length?alternatives.map((option,oi)=>`<button data-swap-choice data-e="${ei}" data-o="${oi}">${esc(option.name)}</button>`).join(''):'<p>No equivalent exercise is available in this program.</p>'}</div>`:'';
   const exerciseDone=ex.sets.every(Boolean);
   const effortHtml=state.equipmentMode==='home'&&exerciseDone?`<div class="effort-check"><span>HOW DID THIS EXERCISE FEEL?</span><div>${[['easy','Too easy'],['right','Challenging'],['hard','Too difficult']].map(([value,label])=>`<button class="${ex.effort===value?'active':''}" data-effort="${value}" data-e="${ei}">${label}</button>`).join('')}</div><p>Your answer adjusts this exercise the next time it appears.</p></div>`:'';
@@ -472,7 +578,9 @@ function queueProgressRewards(before){
     const newTitle=titleForLevel(reached);const titleChanged=newTitle!==titleForLevel(reached-1);
     const eternalReward=reached>100?` Eternal Shard acquired — ${reached-100} total.${reached%10===0?` Ascension Star ${Math.floor((reached-100)/10)} earned.`:''}`:'';
     celebrationQueue.push({type:'level',icon:reached>=100?'★':'✦',title:reached>100?'ETERNAL LEVEL INCREASED':'LEVEL INCREASED',name:`Level ${reached}`,description:(titleChanged?`New title acquired — ${newTitle}.`:`Current title — ${newTitle}. The next quest awaits.`)+eternalReward});
-    const entry=chronicleEntries.find(item=>item.level===reached);if(entry)celebrationQueue.push({type:'chronicle',icon:'▤',title:'CHRONICLE ENTRY UNLOCKED',name:`${entry.number} — ${entry.title}`,description:'A new permanent record is available in the Chronicle tab.'});
+    if(reached%10===0){state.chests++;celebrationQueue.push({type:'achievement',icon:'▣',title:'ASCENDANT CHEST EARNED',name:`Level ${reached} Cache`,description:'A milestone chest is waiting in your Inventory.'});}
+    if(reached===10)addItem('awakeningRelic');if(reached===30)addItem('emberAura');if(reached===70)addItem('celestialAura');if(reached===100)addItem('ascendantCloak');
+    const entry=chronicleEntries.find(item=>item.level===reached);if(entry)celebrationQueue.push({type:'chronicle',icon:'▤',title:'CHRONICLE ENTRY UNLOCKED',name:`${entry.number} — ${entry.title}`,description:'A new permanent record is available in Realm → Chronicle.'});
     const milestone=eternalMilestones.find(item=>item.level===reached);if(milestone)celebrationQueue.push({type:'eternal',icon:milestone.icon,title:'ETERNAL REWARD UNLOCKED',name:milestone.name,description:milestone.description});
     if(reached===100&&!state.eternalCelebrated){state.eternalCelebrated=true;celebrationQueue.push({type:'eternal',icon:'◈',title:'ETERNAL ASCENSION',name:'The Chronicle Is Complete',description:'A hundred levels now stand behind you as proof of discipline, patience, recovery, and resolve. No prophecy carried you here. You earned your Ascension.'});}
   }
@@ -511,14 +619,28 @@ function playSound(type){
 function progress(){
   const groups=achievementGroups(); const all=groups.flatMap(g=>g[1]); const unlocked=all.filter(a=>a[3]>=a[4]).length;
   const achievementHtml=groups.map(([title,items])=>`<section class="achievement-section"><div class="achievement-category"><h3>${title}</h3><span>${items.filter(a=>a[3]>=a[4]).length}/${items.length}</span></div><div class="achievement-grid">${items.map(a=>`<div class="badge ${a[3]>=a[4]?'':'locked'}"><i>${a[0]}</i><b>${a[1]}</b><span>${a[2]}</span><em>${Math.min(a[3],a[4])} / ${a[4]}</em></div>`).join('')}</div></section>`).join('');
-  return shell(`<h1 class="page-title">Progress</h1><p class="page-sub">Every completed quest makes the next one possible.</p><div class="section-head"><h2>Achievements</h2><span>${unlocked}/${all.length} unlocked</span></div>${achievementHtml}<div class="section-head"><h2>Quest history</h2><span>Newest first</span></div>${state.history.length?state.history.slice(0,12).map(h=>`<div class="history-row"><time>${new Date(h.date).toLocaleDateString(undefined,{month:'short',day:'numeric'})}</time><b>Strength Quest ${h.routine}${h.finisherCompleted?' · Finisher':''}</b><span>+${100+(h.finisherCompleted?10:0)} XP</span></div>`).join(''):`<div class="empty">Your completed workouts will appear here.</div>`}`);
+  const attributeHtml=Object.entries(attributeInfo).map(([id,item])=>{const value=state.attributes[id];const grade=attributeGrade(value);return `<article class="attribute-card"><div class="attribute-symbol">${item.icon}</div><div><span>${item.label}</span><b>${value} · ${grade}</b><div class="attribute-track"><i style="width:${value%25/25*100}%"></i></div><small>${item.description}</small></div></article>`}).join('');
+  const skillHtml=['Power','Endurance','Resolve'].map(path=>`<section class="skill-path"><div class="skill-path-head"><span>${path.toUpperCase()} PATH</span></div>${Object.entries(skills).filter(([,skill])=>skill.path===path).map(([id,skill])=>{const owned=Boolean(state.skills[id]);const available=level()>=skill.level&&(!skill.requires||state.skills[skill.requires]);return `<button class="skill-node ${owned?'unlocked':available?'available':'locked'}" data-skill="${id}" ${owned||!available||availableSkillPoints()<1?'disabled':''}><i>${skill.icon}</i><span><b>${skill.name}</b><small>${skill.description}</small><em>${owned?'UNLOCKED':level()<skill.level?`LEVEL ${skill.level}`:availableSkillPoints()? '1 SKILL POINT':'NO POINTS'}</em></span></button>`}).join('')}</section>`).join('');
+  const historyHtml=state.history.length?state.history.slice(0,20).map(h=>`<div class="history-row"><time>${new Date(h.date).toLocaleDateString(undefined,{month:'short',day:'numeric'})}</time><b>Strength Quest ${h.routine}${h.finisherCompleted?' · Finisher':''}</b><span>+${100+(h.finisherCompleted?10:0)} XP</span></div>`).join(''):`<div class="empty">Your completed workouts will appear here.</div>`;
+  const body=progressTab==='attributes'?`<div class="section-head"><h2>Hunter attributes</h2><span>Permanent growth</span></div><div class="attribute-list">${attributeHtml}</div>`:progressTab==='achievements'?`<div class="section-head"><h2>Achievements</h2><span>${unlocked}/${all.length} unlocked</span></div>${achievementHtml}`:progressTab==='skills'?`<section class="skill-summary"><div><span>AVAILABLE POINTS</span><b>${availableSkillPoints()}</b></div><p>Earn one Skill Point every five levels. Skills improve convenience and presentation—never free workout XP.</p><button class="text-button" data-reset-skills ${skillPointsSpent()?'':'disabled'}>RESET SKILL TREE</button></section>${skillHtml}`:`<div class="section-head"><h2>Quest history</h2><span>Newest first</span></div>${historyHtml}`;
+  return shell(`<h1 class="page-title">Progress</h1><p class="page-sub">Attributes, achievements and choices forged through activity.</p><div class="subtabs">${[['attributes','Attributes'],['achievements','Awards'],['skills','Skills'],['history','History']].map(([id,label])=>`<button class="${progressTab===id?'active':''}" data-progress-tab="${id}">${label}</button>`).join('')}</div>${body}`);
 }
-function chronicle(){
+function realm(){
   const hunterLevel=level();const unlocked=chronicleEntries.filter(entry=>hunterLevel>=entry.level).length;const complete=unlocked===chronicleEntries.length;
   const entries=chronicleEntries.map((entry,index)=>{const available=hunterLevel>=entry.level;return `<button class="chronicle-entry ${available?'unlocked':'locked'} ${entry.level===100&&available?'final':''}" data-chronicle="${index}" ${available?'':'disabled'}><div class="chronicle-number">${available?entry.number:'?'}</div><div><span>${available?`ENTRY ${entry.number}`:`SEALED · LEVEL ${entry.level}`}</span><h3>${available?esc(entry.title):'Unknown Chronicle'}</h3><p>${available?'Tap to read this permanent record.':`Continue ascending to unlock at Level ${entry.level}.`}</p></div><i>${available?'›':'◆'}</i></button>`}).join('');
   const milestones=eternalMilestones.map(item=>`<div class="eternal-milestone ${hunterLevel>=item.level?'unlocked':'locked'}"><i>${item.icon}</i><div><b>${item.name}</b><span>${item.description}</span></div><em>${hunterLevel>=item.level?'UNLOCKED':`LEVEL ${item.level}`}</em></div>`).join('');
-  const legacy=hunterLevel>=100?`<section class="eternal-panel"><div class="eternal-panel-head"><div><span>ETERNAL PROGRESSION</span><h2>Your journey continues</h2></div><div class="star-count">★ ${ascensionStars()}</div></div><p>The Chronicle is complete. Every level beyond 100 grants one Eternal Shard, and every ten levels grants an Ascension Star.</p><div class="eternal-currency"><div><b>◆ ${eternalShards()}</b><span>Eternal Shards</span></div><div><b>★ ${ascensionStars()}</b><span>Ascension Stars</span></div></div></section><div class="section-head"><h2>Eternal rewards</h2><span>${eternalMilestones.filter(item=>hunterLevel>=item.level).length}/${eternalMilestones.length}</span></div>${milestones}`:`<div class="chronicle-seal"><i>◈</i><b>Eternal Progression</b><span>Complete the Chronicle at Level 100 to reveal what lies beyond.</span></div>`;
-  return shell(`<h1 class="page-title">Chronicle</h1><p class="page-sub">A permanent record of the path from awakening to Level 100.</p><section class="chronicle-header ${complete?'complete':''}"><div class="chronicle-glyph">${complete?'◈':'◇'}</div><div><span>${complete?'CHRONICLE COMPLETE':'ASCENSION RECORD'}</span><h2>${unlocked} / ${chronicleEntries.length} entries</h2><p>${complete?'Your story is complete. Your Ascension is eternal.':'A new entry is revealed every 10 levels.'}</p></div></section><div class="chronicle-list">${entries}</div>${legacy}`);
+  const comingRegion=nextRegion();const map=regions.map((region,index)=>{const available=hunterLevel>=region.level;const current=currentRegion().name===region.name;const revealed=!available&&state.skills.enduranceII&&comingRegion?.name===region.name;return `<article class="region-card ${available?'unlocked':'locked'} ${current?'current':''} ${revealed?'revealed':''}"><div>${available||revealed?region.icon:'◆'}</div><span><em>REGION ${index+1} · LEVELS ${region.level}–${index===9?'100':region.level+9}</em><b>${available||revealed?region.name:'Unknown Realm'}</b><small>${available||revealed?region.description:`Unlocks at Level ${region.level}`}</small></span>${current?'<i>CURRENT</i>':available?'<i>DISCOVERED</i>':revealed?'<i>REVEALED</i>':'<i>SEALED</i>'}</article>`}).join('');
+  const archiveNames=Object.keys(bossLore);const bosses=archiveNames.map(name=>{const record=state.bossArchive[name];return `<article class="bestiary-card ${record?'unlocked':'locked'}"><div>${record?(record.icon||'♜'):'?'}</div><span><em>${record?'DEFEATED':'UNDISCOVERED'}</em><b>${record?name:'Unknown Boss'}</b><small>${record?bossLore[name]:'Defeat this Weekly Boss to reveal its record.'}</small>${record?`<i>First defeated ${new Date(record.firstDefeat).toLocaleDateString()} · ${record.wins} win${record.wins===1?'':'s'}</i>`:''}</span></article>`}).join('');
+  const shop=[['eternalHalo',20],['sovereignFrame',40]].map(([id,cost])=>{const item=itemCatalog[id];const purchased=state.eternalPurchases.includes(id);return `<article class="eternal-shop-item"><i>${item.icon}</i><div><b>${item.name}</b><small>${item.description}</small></div><button data-eternal-buy="${id}" data-cost="${cost}" ${purchased||eternalShards()<cost?'disabled':''}>${purchased?'OWNED':`◆ ${cost}`}</button></article>`}).join('');
+  const eternal=hunterLevel>=100?`<section class="eternal-panel"><div class="eternal-panel-head"><div><span>ETERNAL PROGRESSION</span><h2>Your journey continues</h2></div><div class="star-count">★ ${ascensionStars()}</div></div><p>The Chronicle is complete. Levels beyond 100 grant Eternal Shards for permanent cosmetic rewards.</p><div class="eternal-currency"><div><b>◆ ${eternalShards()}</b><span>Available Shards</span></div><div><b>★ ${ascensionStars()}</b><span>Ascension Stars</span></div></div></section><div class="section-head"><h2>Eternal forge</h2><span>Cosmetics only</span></div>${shop}<div class="section-head"><h2>Eternal milestones</h2><span>${eternalMilestones.filter(item=>hunterLevel>=item.level).length}/${eternalMilestones.length}</span></div>${milestones}`:`<div class="chronicle-seal"><i>◈</i><b>Eternal Progression</b><span>Complete the Chronicle at Level 100 to reveal what lies beyond.</span></div>`;
+  const body=realmTab==='map'?`<section class="realm-banner"><span>CURRENT REGION</span><h2>${currentRegion().name}</h2><p>${currentRegion().description}</p></section><div class="region-map">${map}</div>`:realmTab==='chronicle'?`<section class="chronicle-header ${complete?'complete':''}"><div class="chronicle-glyph">${complete?'◈':'◇'}</div><div><span>${complete?'CHRONICLE COMPLETE':'ASCENSION RECORD'}</span><h2>${unlocked} / ${chronicleEntries.length} entries</h2><p>${complete?'Your story is complete. Your Ascension is eternal.':'A new entry is revealed every 10 levels.'}</p></div></section><div class="chronicle-list">${entries}</div>`:realmTab==='bosses'?`<div class="section-head"><h2>Boss Archive</h2><span>${Object.keys(state.bossArchive).length}/${archiveNames.length} discovered</span></div><div class="bestiary-list">${bosses}</div>`:eternal;
+  return shell(`<h1 class="page-title">Realm</h1><p class="page-sub">Explore the path, preserve the Chronicle and remember every conquered trial.</p><div class="subtabs realm-tabs">${[['map','Map'],['chronicle','Chronicle'],['bosses','Bosses'],['eternal','Eternal']].map(([id,label])=>`<button class="${realmTab===id?'active':''}" data-realm-tab="${id}">${label}</button>`).join('')}</div>${body}`);
+}
+
+function inventory(){
+  const items=ownedItemIds();const cards=items.length?items.map(id=>{const item=itemCatalog[id];const equipped=state.equipped[item.slot]===id;return `<article class="inventory-item rarity-${item.rarity} ${equipped?'equipped':''}"><div>${item.icon}</div><span><em>${item.rarity.toUpperCase()} · ${item.slot.toUpperCase()}</em><b>${item.name}</b><small>${item.description}</small></span><button data-equip-item="${id}">${equipped?'UNEQUIP':'EQUIP'}</button></article>`}).join(''):`<div class="empty">Your first collectible will appear here after a milestone or chest.</div>`;
+  const loadout=Object.entries(state.equipped).map(([slot,id])=>`<div><span>${slot.toUpperCase()}</span><b>${id?`${itemCatalog[id].icon} ${itemCatalog[id].name}`:'Empty'}</b></div>`).join('');
+  return shell(`<div class="inventory-title"><div><h1 class="page-title">Inventory</h1><p class="page-sub">Collectibles earned through activity—never purchased with real money.</p></div><button class="icon-btn" data-page="home">×</button></div><section class="chest-vault ${state.chests&&state.skills.resolveII?'treasure-sense':''}"><div>▣</div><span><em>CHEST VAULT</em><b>${state.chests} unopened</b><small>Complete three Strength Quests or defeat a Weekly Boss to earn chests.</small></span><button data-open-chest ${state.chests?'':'disabled'}>OPEN</button></section><div class="chest-progress"><span>Next Common Cache</span><b>${state.chestProgress} / 3 quests</b><div><i style="width:${state.chestProgress/3*100}%"></i></div></div><div class="section-head"><h2>Equipped loadout</h2><span>Cosmetic and convenience</span></div><section class="loadout-grid">${loadout}</section><div class="section-head"><h2>Collected items</h2><span>${inventoryCount()} total</span></div><div class="inventory-list">${cards}</div>`);
 }
 function showChronicleEntry(index){
   const entry=chronicleEntries[index];if(!entry||level()<entry.level)return;
@@ -536,31 +658,41 @@ function settings(){
   <div class="settings-card"><h3>Quest difficulty</h3><p class="settings-note equipment-help">Changes sets, repetitions, exercise variations and suggested starting weights. Exercise feedback then adapts future targets. Always prioritise safe form.</p><div class="mode-grid">${difficulties}</div></div>
   <div class="settings-card"><h3>Interface theme</h3><p class="settings-note equipment-help">New visual styles unlock as your Hunter reaches Level 100.</p><div class="theme-grid">${themes}</div></div>
   <div class="settings-card setting-row"><div><h3>Quest sounds</h3><p class="settings-note">Set confirmations, quests, levels and achievements.</p></div><button class="toggle ${state.soundEnabled?'on':''}" data-sound role="switch" aria-checked="${state.soundEnabled}"><span></span></button></div>
-  <div class="settings-card"><h3>How Ascension works</h3><p class="settings-note equipment-help">Replay the short guide to profiles, quests, training, Bosses and backups.</p><button class="secondary" data-tutorial>OPEN TUTORIAL</button></div>
-  <div class="settings-card"><h3>Progression rules</h3><p class="settings-note">XP requirements rise by 20 every 10 levels, from 200 XP to a permanent 400 XP cap. Home exercise targets adapt to completed difficulty feedback, and optional finishers add 10 XP. Side Quests grow gradually, while the Recovery Walk stops increasing at 45 minutes.</p></div>
+  <div class="settings-card"><h3>How Ascension works</h3><p class="settings-note equipment-help">Replay the guide to the Hunter dashboard, Quest Board, attributes, Inventory, Realm and backups.</p><button class="secondary" data-tutorial>OPEN TUTORIAL</button></div>
+  <div class="settings-card"><h3>Progression rules</h3><p class="settings-note">XP requirements rise by 20 every 10 levels, from 200 XP to a permanent 400 XP cap. Activity also develops Hunter attributes, every five levels grants a Skill Point, and milestone chests contain cosmetic or convenience items. Home targets adapt to difficulty feedback; optional finishers add 10 XP.</p></div>
   <div class="settings-card"><h3>Backup</h3><div class="button-row"><button class="secondary" data-export>Export data</button><button class="secondary" data-import>Import data</button></div><input type="file" id="file" accept="application/json" hidden /></div>
   <div class="settings-card"><h3>Start over</h3><button class="secondary danger" data-reset>Reset all progress</button></div>`);
 }
 function applyTheme(){document.documentElement.dataset.theme=state.theme;}
-function render(){ applyTheme();document.querySelector('#app').innerHTML=page==='home'?home():page==='workout'?workout():page==='progress'?progress():page==='chronicle'?chronicle():settings(); bind(); }
+function render(){ applyTheme();document.querySelector('#app').innerHTML=page==='home'?home():page==='workout'?workout():page==='progress'?progress():page==='realm'?realm():page==='inventory'?inventory():settings(); bind(); }
 function toast(msg){ const el=document.querySelector('#toast'); if(!el)return; el.textContent=msg; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),1800); }
 function bind(){
   document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>{page=b.dataset.page;render();scrollTo(0,0)});
-  document.querySelector('[data-start]')?.addEventListener('click',()=>{page='workout';render()});
+  document.querySelectorAll('[data-inventory]').forEach(b=>b.onclick=()=>{page='inventory';render();scrollTo(0,0)});
+  document.querySelectorAll('[data-progress-tab]').forEach(b=>b.onclick=()=>{progressTab=b.dataset.progressTab;page='progress';render();scrollTo(0,0)});
+  document.querySelectorAll('[data-realm-tab]').forEach(b=>b.onclick=()=>{realmTab=b.dataset.realmTab;render();scrollTo(0,0)});
+  document.querySelector('[data-start]')?.addEventListener('click',()=>{ensureDraft();page='workout';render()});
   document.querySelector('[data-warmup-done]')?.addEventListener('click',()=>{state.draft.warmupDone=true;save();render();toast('Warm-up complete')});
   document.querySelector('[data-warmup-skip]')?.addEventListener('click',()=>{state.draft.warmupSkipped=true;save();render()});
   document.querySelectorAll('[data-set]').forEach(b=>b.onclick=()=>{const sets=state.draft.exercises[+b.dataset.e].sets;sets[+b.dataset.s]=!sets[+b.dataset.s];if(sets[+b.dataset.s])playSound('set');save();render()});
   document.querySelectorAll('[data-effort]').forEach(b=>b.onclick=()=>{state.draft.exercises[+b.dataset.e].effort=b.dataset.effort;save();render();toast('Difficulty feedback saved')});
   document.querySelector('[data-finisher]')?.addEventListener('click',()=>{state.draft.finisherDone=!state.draft.finisherDone;save();render();if(state.draft.finisherDone){playSound('set');toast('Finisher confirmed · +10 XP with quest')}});
-  document.querySelectorAll('[data-swap]').forEach(b=>b.onclick=()=>{if((state.draft.swapsUsed||0)>=MAX_SWAPS_PER_QUEST){swapOpen=null;render();toast('Swap limit reached for this quest');return;}const index=+b.dataset.e;swapOpen=swapOpen===index?null:index;render()});
+  document.querySelectorAll('[data-swap]').forEach(b=>b.onclick=()=>{if((state.draft.swapsUsed||0)>=maxQuestSwaps()){swapOpen=null;render();toast('Swap limit reached for this quest');return;}const index=+b.dataset.e;swapOpen=swapOpen===index?null:index;render()});
   document.querySelectorAll('[data-info]').forEach(b=>b.onclick=()=>showExerciseGuide(+b.dataset.e));
   document.querySelectorAll('[data-chronicle]').forEach(b=>b.onclick=()=>showChronicleEntry(+b.dataset.chronicle));
   document.querySelectorAll('[data-quest-detail]').forEach(b=>b.onclick=()=>showQuestDetails(b.dataset.questDetail));
-  document.querySelectorAll('[data-swap-choice]').forEach(b=>b.onclick=()=>{if((state.draft.swapsUsed||0)>=MAX_SWAPS_PER_QUEST){swapOpen=null;render();toast('Swap limit reached for this quest');return;}const index=+b.dataset.e;const current=state.draft.exercises[index];const option=alternativesFor(current)[+b.dataset.o];if(!option)return;state.draft.exercises[index]=prepareDraftExercise(option,current.sets.length,current.sets);state.draft.swapsUsed=(state.draft.swapsUsed||0)+1;const remaining=MAX_SWAPS_PER_QUEST-state.draft.swapsUsed;swapOpen=null;save();render();toast(`Replaced with ${option.name} · ${remaining} swap${remaining===1?'':'s'} left`)});
+  document.querySelectorAll('[data-swap-choice]').forEach(b=>b.onclick=()=>{if((state.draft.swapsUsed||0)>=maxQuestSwaps()){swapOpen=null;render();toast('Swap limit reached for this quest');return;}const index=+b.dataset.e;const current=state.draft.exercises[index];const option=alternativesFor(current)[+b.dataset.o];if(!option)return;state.draft.exercises[index]=prepareDraftExercise(option,current.sets.length,current.sets);state.draft.swapsUsed=(state.draft.swapsUsed||0)+1;const remaining=maxQuestSwaps()-state.draft.swapsUsed;swapOpen=null;save();render();toast(`Replaced with ${option.name} · ${remaining} swap${remaining===1?'':'s'} left`)});
   document.querySelector('[data-finish]')?.addEventListener('click',finish);
   document.querySelector('[data-recovery]')?.addEventListener('click',completeRecovery);
   document.querySelector('[data-side-quest]')?.addEventListener('click',completeSideQuest);
   document.querySelector('[data-boss-claim]')?.addEventListener('click',claimBoss);
+  document.querySelector('[data-encounter]')?.addEventListener('click',completeEncounter);
+  document.querySelector('[data-dismiss-reward]')?.addEventListener('click',()=>{state.lastReward=null;save();render()});
+  document.querySelector('[data-open-chest]')?.addEventListener('click',openChest);
+  document.querySelectorAll('[data-equip-item]').forEach(b=>b.onclick=()=>equipItem(b.dataset.equipItem));
+  document.querySelectorAll('[data-skill]').forEach(b=>b.onclick=()=>unlockSkill(b.dataset.skill));
+  document.querySelector('[data-reset-skills]')?.addEventListener('click',()=>{if(confirm('Reset every spent Skill Point?')){state.skills={};save();render();toast('Skill Tree reset')}});
+  document.querySelectorAll('[data-eternal-buy]').forEach(b=>b.onclick=()=>buyEternalItem(b.dataset.eternalBuy,+b.dataset.cost));
   document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{state.equipmentMode=b.dataset.mode;state.draft=null;save();render();toast(`${equipmentModes[state.equipmentMode].label} quests selected`)});
   document.querySelectorAll('[data-difficulty]').forEach(b=>b.onclick=()=>{state.difficulty=b.dataset.difficulty;state.draft=null;save();render();toast(`${difficultyModes[state.difficulty].label} difficulty selected`)});
   document.querySelectorAll('[data-theme-choice]').forEach(b=>b.onclick=()=>{const id=b.dataset.themeChoice;if(level()<themeModes[id].level)return;state.theme=id;save();render();toast(`${themeModes[id].label} theme equipped`)});
@@ -570,20 +702,26 @@ function bind(){
   document.querySelector('[data-export]')?.addEventListener('click',exportData);
   document.querySelector('[data-import]')?.addEventListener('click',()=>document.querySelector('#file').click());
   document.querySelector('#file')?.addEventListener('change',importData);
-  document.querySelector('[data-reset]')?.addEventListener('click',()=>{if(confirm('Reset all levels and workout history?')){state={...initial,history:[],bests:{},bossClaims:{}};save();page='home';render();showOnboarding()}});
+  document.querySelector('[data-reset]')?.addEventListener('click',()=>{if(confirm('Reset all levels and workout history?')){state=normalizeRpgState(JSON.parse(JSON.stringify(initial)),{});save();page='home';render();showOnboarding()}});
 }
 function completeRecovery(){
   if(state.recoveryDate===localDay()) return;
   const before=progressSnapshot();
-  state.recoveryDate=localDay(); state.recoveryCount++; state.xp+=20; save(); render(); playSound('quest'); toast('Recovery complete · +20 XP'); queueProgressRewards(before);
+  state.recoveryDate=localDay(); state.recoveryCount++;state.xp+=20;addAttribute('endurance',1);addAttribute('vitality',1);state.lastReward={icon:'☾',title:'Recovery Walk completed',detail:'+20 XP · +1 Endurance · +1 Vitality'};save();render();playSound('quest');toast('Recovery complete · +20 XP');queueProgressRewards(before);
 }
 function completeSideQuest(){
   if(state.sideQuestDate===localDay())return;
-  const before=progressSnapshot();state.sideQuestDate=localDay();state.sideQuestCount++;state.xp+=15;save();render();playSound('set');toast('Side Quest complete · +15 XP');queueProgressRewards(before);
+  const before=progressSnapshot();state.sideQuestDate=localDay();state.sideQuestCount++;state.xp+=15;addAttribute('agility',1);state.lastReward={icon:'◇',title:'Side Quest completed',detail:'+15 XP · +1 Agility'};save();render();playSound('set');toast('Side Quest complete · +15 XP');queueProgressRewards(before);
+}
+function completeEncounter(){
+  if(state.encounterDate===localDay())return;
+  const before=progressSnapshot();const encounter=randomEncounter();state.encounterDate=localDay();state.xp+=5;addAttribute(encounter.attribute,1);state.lastReward={icon:encounter.icon,title:`${encounter.name} completed`,detail:`+5 XP · +1 ${attributeInfo[encounter.attribute].label}`};save();render();playSound('set');toast('Random Encounter complete · +5 XP');queueProgressRewards(before);
 }
 function claimBoss(){
   const boss=currentBoss();if(!boss.complete||boss.claimed)return;
-  const before=progressSnapshot();state.bossClaims[boss.key]=true;state.bossWins++;state.xp+=200;save();render();playSound('quest');toast('Weekly Boss defeated · +200 XP');queueProgressRewards(before);
+  const before=progressSnapshot();state.bossClaims[boss.key]=true;state.bossWins++;state.xp+=200;addAttribute('discipline',2);state.chests++;
+  const record=state.bossArchive[boss.name]||{icon:boss.icon,firstDefeat:new Date().toISOString(),wins:0};record.wins++;state.bossArchive[boss.name]=record;if(record.wins===1)addItem('ironSigil');
+  state.lastReward={icon:boss.icon,title:`${boss.name} defeated`,detail:'+200 XP · +2 Discipline · Boss Vault earned'};save();render();playSound('quest');toast('Weekly Boss defeated · chest earned');queueProgressRewards(before);
 }
 function finish(){
   const before=progressSnapshot();
@@ -597,15 +735,31 @@ function finish(){
   const setsConfirmed=state.draft.exercises.reduce((sum,exercise)=>sum+exercise.sets.filter(Boolean).length,0);
   const finisherCompleted=state.equipmentMode==='home'&&Boolean(state.draft.finisherDone);const earnedXp=100+(finisherCompleted?10:0);
   state.history.unshift({date:now.toISOString(),routine:state.routine,equipmentMode:state.equipmentMode,difficulty:state.difficulty,warmupCompleted:Boolean(state.draft.warmupDone),finisherCompleted,setsConfirmed}); state.lastWorkout=now.toISOString(); state.workoutCount++; state.xp+=earnedXp;
-  state.routine=routineOrder[(routineOrder.indexOf(state.routine)+1)%routineOrder.length]; state.draft=null; swapOpen=null; save(); page='home'; render(); playSound('quest'); toast(`Quest complete · +${earnedXp} XP`); queueProgressRewards(before);
+  addAttribute('strength',3);addAttribute('discipline',1);if(finisherCompleted)addAttribute('endurance',1);if(state.workoutCount%3===0)addAttribute('vitality',1);
+  state.chestProgress=(state.chestProgress||0)+1;let chestEarned=false;if(state.chestProgress>=3){state.chestProgress-=3;state.chests++;chestEarned=true;}
+  if(state.workoutCount===10)addItem('vanguardRing');
+  state.lastReward={icon:'⚔',title:`Strength Quest ${state.routine} completed`,detail:`+${earnedXp} XP · +3 Strength · +1 Discipline${finisherCompleted?' · +1 Endurance':''}${chestEarned?' · Common Cache earned':''}`};
+  state.routine=routineOrder[(routineOrder.indexOf(state.routine)+1)%routineOrder.length]; state.draft=null; swapOpen=null; save(); page='workout'; render(); playSound('quest'); toast(`Quest complete · +${earnedXp} XP`); queueProgressRewards(before);
+}
+function openChest(){
+  if(state.chests<1)return;const id=lootPool[state.chestsOpened%lootPool.length];const item=itemCatalog[id];state.chests--;state.chestsOpened++;addItem(id);state.lastReward={icon:item.icon,title:`${item.name} discovered`,detail:`${item.rarity.toUpperCase()} ${item.slot} added to Inventory`};save();render();celebrationQueue.push({type:'loot',icon:item.icon,title:'CHEST OPENED',name:item.name,description:`${item.rarity.toUpperCase()} ${item.slot} added to your Inventory.`});showNextCelebration();
+}
+function equipItem(id){
+  const item=itemCatalog[id];if(!item||!state.inventory[id])return;state.equipped[item.slot]=state.equipped[item.slot]===id?null:id;save();render();toast(state.equipped[item.slot]===id?`${item.name} equipped`:`${item.name} unequipped`);
+}
+function unlockSkill(id){
+  const skill=skills[id];if(!skill||state.skills[id]||level()<skill.level||availableSkillPoints()<1||(skill.requires&&!state.skills[skill.requires]))return;state.skills[id]=true;if(skill.rewardItem)addItem(skill.rewardItem);state.lastReward={icon:skill.icon,title:`${skill.name} unlocked`,detail:skill.rewardItem?`${itemCatalog[skill.rewardItem].name} added to Inventory`:'New Skill Tree distinction acquired'};save();render();playSound('achievement');toast(`${skill.name} unlocked`);
+}
+function buyEternalItem(id,cost){
+  if(level()<100||state.eternalPurchases.includes(id)||eternalShards()<cost)return;state.shardsSpent+=cost;state.eternalPurchases.push(id);addItem(id);state.lastReward={icon:itemCatalog[id].icon,title:`${itemCatalog[id].name} forged`,detail:`${cost} Eternal Shards used`};save();render();playSound('achievement');toast(`${itemCatalog[id].name} added to Inventory`);
 }
 function exportData(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ascension-backup.json';a.click();URL.revokeObjectURL(a.href);}
 function importData(e){
   const f=e.target.files[0];if(!f)return;const r=new FileReader();
   r.onload=()=>{try{
-    const restored=JSON.parse(r.result);const migrated=migrateLegacyXp({...initial,...restored},restored.xpSystemVersion!==2);
+    const restored=JSON.parse(r.result);const migrated=migrateLegacyXp({...JSON.parse(JSON.stringify(initial)),...restored},restored.xpSystemVersion!==2);
     state={...migrated,draft:null,onboardingComplete:true,tutorialComplete:restored.tutorialComplete===undefined?true:Boolean(restored.tutorialComplete)};
-    if(state.name==='Mahmoud')state.name='';if(!routineOrder.includes(state.routine))state.routine='A';if(!equipmentModes[state.equipmentMode])state.equipmentMode='home';if(!difficultyModes[state.difficulty])state.difficulty='intermediate';if(!themeModes[state.theme]||level()<themeModes[state.theme].level)state.theme='shadow';if(!state.bossClaims||typeof state.bossClaims!=='object')state.bossClaims={};if(!Number.isFinite(state.bossWins))state.bossWins=0;if(!state.exerciseAdjustments||typeof state.exerciseAdjustments!=='object')state.exerciseAdjustments={};if(restored.eternalCelebrated===undefined&&level()>=100)state.eternalCelebrated=true;
+    if(state.name==='Mahmoud')state.name='';if(!routineOrder.includes(state.routine))state.routine='A';if(!equipmentModes[state.equipmentMode])state.equipmentMode='home';if(!difficultyModes[state.difficulty])state.difficulty='intermediate';if(!themeModes[state.theme]||level()<themeModes[state.theme].level)state.theme='shadow';if(!state.bossClaims||typeof state.bossClaims!=='object')state.bossClaims={};if(!Number.isFinite(state.bossWins))state.bossWins=0;if(!state.exerciseAdjustments||typeof state.exerciseAdjustments!=='object')state.exerciseAdjustments={};if(restored.eternalCelebrated===undefined&&level()>=100)state.eternalCelebrated=true;normalizeRpgState(state,restored);
     save();page='home';render();toast('Backup restored');
   }catch{alert('That backup file could not be read.')}};r.readAsText(f);
 }
@@ -626,11 +780,13 @@ function showOnboarding(){
 function showTutorial(force=false){
   if((state.tutorialComplete&&!force)||document.querySelector('.tutorial-overlay'))return;
   const pages=[
-    {icon:'◈',step:'01',title:'Your Hunter Profile',text:'Complete quests to earn XP, increase your level, evolve your emblem, unlock themes, and reveal a Chronicle entry every 10 levels.'},
-    {icon:'⚔',step:'02',title:'Complete Quests',text:'Strength Quests build progression. Recovery Walks and optional Daily Side Quests provide smaller XP rewards.'},
-    {icon:'◇',step:'03',title:'Train Safely',text:'Choose an appropriate difficulty, complete the warm-up, follow rest guidance, open INFO for form cues, and rate completed exercises so future targets adapt.'},
-    {icon:'♜',step:'04',title:'Defeat Weekly Bosses',text:'Each Monday begins a new Boss challenge. Complete its target and claim 200 bonus XP before the week ends.'},
-    {icon:'▣',step:'05',title:'Protect Your Progress',text:'Your data stays on this device. Export a backup regularly from Settings so it can be restored if your phone changes.'}
+    {icon:'◈',step:'01',title:'Your Hunter Dashboard',text:'Home now focuses on your identity, XP, attributes, current region, equipment and recent accomplishments.'},
+    {icon:'⚔',step:'02',title:'Enter the Quest Board',text:'All Strength, Recovery and Side Quests, Random Encounters and Weekly Bosses are located in the Quest tab.'},
+    {icon:'◇',step:'03',title:'Train Safely',text:'Choose an appropriate difficulty, warm up, follow rest guidance, open INFO for form cues, and rate exercises so future Home targets adapt.'},
+    {icon:'✦',step:'04',title:'Develop Attributes',text:'Activity builds Strength, Endurance, Vitality, Agility and Discipline. Every five levels also grants one Skill Point.'},
+    {icon:'▣',step:'05',title:'Collect Your Rewards',text:'Milestones, every three Strength Quests and Weekly Bosses award chests or collectible equipment stored in Inventory.'},
+    {icon:'♜',step:'06',title:'Explore the Realm',text:'The Realm contains the Level 1–100 map, Chronicle, Boss Archive and post-Level-100 Eternal Forge.'},
+    {icon:'☾',step:'07',title:'Protect Your Progress',text:'Your data stays on this device. Export a backup regularly from Settings so the entire RPG journey can be restored.'}
   ];
   let index=0;const overlay=document.createElement('div');overlay.className='tutorial-overlay';document.body.appendChild(overlay);
   const close=()=>{state.tutorialComplete=true;save();overlay.remove()};
