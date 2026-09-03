@@ -294,10 +294,6 @@ function currentBoss(){
   const boss=bosses[index];const value=Math.min(boss.target,boss.value());
   return {...boss,value,key:window.key,claimed:Boolean(state.bossClaims[window.key]),complete:value>=boss.target};
 }
-function weeklyHomeTraining(){
-  const window=weekWindow();const workouts=state.history.filter(item=>{const date=new Date(item.date);return item.equipmentMode==='home'&&date>=window.start&&date<window.end});
-  return {sessions:workouts.length,sets:workouts.reduce((sum,item)=>sum+(item.setsConfirmed||0),0),finishers:workouts.filter(item=>item.finisherCompleted).length};
-}
 function esc(v=''){ return String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 function shell(content){ return `<main class="shell"><header class="topbar"><div><div class="eyebrow">Personal growth protocol</div><div class="brand">ASCENSION</div></div><button class="icon-btn" data-page="settings" aria-label="Settings">⚙</button></header>${content}</main>${nav()}<div id="toast" class="toast"></div>`; }
 function nav(){ return `<nav class="nav">${[['home','⌂','Home'],['workout','⚔','Quest'],['progress','◈','Progress'],['chronicle','▤','Chronicle'],['settings','⚙','Settings']].map(([id,icon,label])=>`<button data-page="${id}" class="${page===id?'active':''}"><i>${icon}</i>${label}</button>`).join('')}</nav>`; }
@@ -313,10 +309,8 @@ function home(){
   const hunterLevel=level();
   const heroClasses=[hunterLevel>=125?'legacy-border':'',hunterLevel>=150?'eternal-aura':''].filter(Boolean).join(' ');
   const eternalSummary=hunterLevel>=100?`<div class="eternal-summary"><div><span>ETERNAL SHARDS</span><b>◆ ${eternalShards()}</b></div><div><span>ASCENSION STARS</span><b>★ ${ascensionStars()}</b></div></div>`:'';
-  const homeWeek=weeklyHomeTraining();const weeklyHomeHtml=state.equipmentMode==='home'?`<section class="home-week"><div class="home-week-head"><div><span>WEEKLY HOME TRAINING</span><h2>${homeWeek.sessions>=2?'Strength goal achieved':'Build a stronger week'}</h2></div><b>${Math.min(homeWeek.sessions,2)} / 2</b></div><div class="home-week-track"><div style="width:${Math.min(100,homeWeek.sessions/2*100)}%"></div></div><div class="home-week-stats"><div><b>${homeWeek.sessions}</b><span>Home quests</span></div><div><b>${homeWeek.sets}</b><span>Sets confirmed</span></div><div><b>${homeWeek.finishers}</b><span>Finishers</span></div></div></section>`:'';
   return shell(`<section class="hero ${heroClasses}"><div class="profile-row"><div class="level-medal emblem-${emblem.id} ${hunterLevel>=200?'legendary-variation':''}" title="${emblem.name}"><i>${emblem.glyph}</i><div><span>LEVEL</span><b>${hunterLevel}</b></div></div><div class="profile-copy"><h1>${esc(state.name || 'Hunter')}</h1><div class="hunter-title">${esc(titleForLevel())}</div><div class="rank">Current rank · <strong>${rank()}</strong></div></div></div><div class="xp-line"><span>LEVEL PROGRESS</span><span>${levelXp()} / ${levelRequirement()} XP</span></div><div class="xp-track"><div class="xp-fill" style="width:${Math.min(100,levelXp()/levelRequirement()*100)}%"></div></div>${eternalSummary}<div class="stats"><div class="stat"><b>${state.streak}</b><span>Streak</span></div><div class="stat"><b>${state.workoutCount}</b><span>Quests</span></div><div class="stat"><b>${Object.keys(state.bests).length}</b><span>Records</span></div></div></section>
   <aside class="daily-directive"><div class="directive-mark">✦</div><div><span>DAILY DIRECTIVE</span><p>“${esc(dailyDirective())}”</p></div></aside>
-  ${weeklyHomeHtml}
   <div class="section-head"><h2>Daily quests</h2><span>${new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</span></div>
   <div class="mode-chip">⌂ ${equipmentModes[state.equipmentMode].label} · ${difficultyModes[state.difficulty].label}</div>
   <article class="quest"><div class="quest-icon">⚔</div><div class="quest-body"><h3>Strength Quest ${next} · ${current[next].title}</h3><p>${current[next].exercises.map(x=>x.name).slice(0,3).join(' · ')}</p></div><div class="reward">+100 XP</div></article>
