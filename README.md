@@ -42,6 +42,9 @@ An original RPG-inspired progressive workout tracker built as an installable iPh
 - Strength Quests display ranks from E through Eternal while respecting the chosen difficulty mode.
 - One safe optional Random Encounter rotates daily for a small XP and attribute reward.
 - Post-Level-100 Eternal Shards can forge cosmetic rewards; they cannot purchase workout completion or XP.
+- Each unlocked Realm adds an optional subtle atmosphere layer without changing the selected interface theme; it can be disabled in Settings.
+- A private optional note can be saved after each completed Strength Quest and viewed in History.
+- Installed users receive an in-app notice when a newer service-worker version is ready, with a safe refresh action that preserves saved progress.
 
 ## Use
 

@@ -207,7 +207,7 @@ const bossLore = {
 };
 function activeRoutines(){ return equipmentModes[state.equipmentMode].routines; }
 
-const initial = { name: '', xp: 0, xpSystemVersion:2, rpgSystemVersion:1, streak: 0, lastWorkout: null, workoutCount: 0, routine: 'A', equipmentMode: 'home', difficulty: 'beginner', theme: 'shadow', soundEnabled: false, onboardingComplete: false, tutorialComplete:false, eternalCelebrated:false, history: [], bests: {}, exerciseAdjustments:{}, draft: null, recoveryDate: null, recoveryCount: 0, sideQuestDate:null, sideQuestCount:0, bossClaims:{}, bossWins:0, attributes:{strength:0,endurance:0,vitality:0,agility:0,discipline:0}, inventory:{}, chests:0, chestsOpened:0, chestProgress:0, equipped:{sigil:null,charm:null,aura:null,relic:null}, skills:{}, encounterDate:null, bossArchive:{}, shardsSpent:0, eternalPurchases:[], lastReward:null };
+const initial = { name: '', xp: 0, xpSystemVersion:2, rpgSystemVersion:1, streak: 0, lastWorkout: null, workoutCount: 0, routine: 'A', equipmentMode: 'home', difficulty: 'beginner', theme: 'shadow', regionAtmosphere:true, soundEnabled: false, onboardingComplete: false, tutorialComplete:false, eternalCelebrated:false, history: [], bests: {}, exerciseAdjustments:{}, draft: null, recoveryDate: null, recoveryCount: 0, sideQuestDate:null, sideQuestCount:0, bossClaims:{}, bossWins:0, attributes:{strength:0,endurance:0,vitality:0,agility:0,discipline:0}, inventory:{}, chests:0, chestsOpened:0, chestProgress:0, equipped:{sigil:null,charm:null,aura:null,relic:null}, skills:{}, encounterDate:null, bossArchive:{}, shardsSpent:0, eternalPurchases:[], lastReward:null };
 let state = load();
 let page = 'home';
 let progressTab = 'attributes';
@@ -250,6 +250,8 @@ function normalizeRpgState(record,stored={}){
   if(!record.skills||typeof record.skills!=='object')record.skills={};
   if(!record.bossArchive||typeof record.bossArchive!=='object')record.bossArchive={};
   if(!Array.isArray(record.eternalPurchases))record.eternalPurchases=[];
+  if(typeof record.regionAtmosphere!=='boolean')record.regionAtmosphere=true;
+  if(Array.isArray(record.history))record.history.forEach(item=>{if(typeof item.note!=='string')item.note='';});
   ['chests','chestsOpened','chestProgress','shardsSpent'].forEach(key=>record[key]=Math.max(0,Number(record[key])||0));
   if(stored.rpgSystemVersion===undefined){
     if((record.workoutCount||0)>=10)record.inventory.vanguardRing=Math.max(1,record.inventory.vanguardRing||0);
@@ -418,7 +420,8 @@ function home(){
 
 function questHub(){
   const next=state.routine;const current=activeRoutines();const recoveryDone=state.recoveryDate===localDay();const sideQuestDone=state.sideQuestDate===localDay();const encounterDone=state.encounterDate===localDay();const sideQuest=dailySideQuest();const encounter=randomEncounter();const boss=currentBoss();
-  const reward=state.lastReward?`<section class="quest-reward-summary"><button data-dismiss-reward aria-label="Dismiss">×</button><span>LAST REWARD</span><h3>${esc(state.lastReward.title)}</h3><p>${esc(state.lastReward.detail)}</p></section>`:'';
+  const rewardNote=state.lastReward?.historyDate&&state.history[0]?.date===state.lastReward.historyDate?`<div class="workout-note"><label for="workout-note">PRIVATE WORKOUT NOTE · OPTIONAL</label><textarea id="workout-note" maxlength="280" placeholder="How did the workout feel? Anything to remember next time?">${esc(state.history[0].note||'')}</textarea><button class="secondary" data-save-note>${state.history[0].note?'UPDATE NOTE':'SAVE NOTE'}</button></div>`:'';
+  const reward=state.lastReward?`<section class="quest-reward-summary"><button data-dismiss-reward aria-label="Dismiss">×</button><span>LAST REWARD</span><h3>${esc(state.lastReward.title)}</h3><p>${esc(state.lastReward.detail)}</p>${rewardNote}</section>`:'';
   return shell(`<h1 class="page-title">Quest Board</h1><p class="page-sub">All training, recovery and challenges are gathered here.</p>${reward}<div class="section-head"><h2>Today’s quests</h2><span>${new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}</span></div><div class="mode-chip">${questRank()}-RANK · ${equipmentModes[state.equipmentMode].label} · ${difficultyModes[state.difficulty].label}</div>
   <article class="quest"><div class="quest-icon">⚔</div><div class="quest-body"><h3>Strength Quest ${next} · ${current[next].title}</h3><p>${current[next].exercises.map(x=>x.name).slice(0,3).join(' · ')}</p></div><div class="reward">+100 XP</div></article><button class="primary" data-start>BEGIN STRENGTH QUEST</button>
   <button class="quest recovery-quest quest-detail-card" data-quest-detail="recovery"><div class="quest-icon">◌</div><div class="quest-body"><h3>Recovery Walk · ${recoveryMinutes()} minutes</h3><p>Comfortable pace · increases every 10 levels</p></div><div class="quest-meta"><div class="reward">+20 XP</div><span class="detail-chevron">›</span></div></button><button class="secondary ${recoveryDone?'completed':''}" data-recovery ${recoveryDone?'disabled':''}>${recoveryDone?'✓ RECOVERY COMPLETE TODAY':'CONFIRM RECOVERY WALK'}</button>
@@ -621,7 +624,7 @@ function progress(){
   const achievementHtml=groups.map(([title,items])=>`<section class="achievement-section"><div class="achievement-category"><h3>${title}</h3><span>${items.filter(a=>a[3]>=a[4]).length}/${items.length}</span></div><div class="achievement-grid">${items.map(a=>`<div class="badge ${a[3]>=a[4]?'':'locked'}"><i>${a[0]}</i><b>${a[1]}</b><span>${a[2]}</span><em>${Math.min(a[3],a[4])} / ${a[4]}</em></div>`).join('')}</div></section>`).join('');
   const attributeHtml=Object.entries(attributeInfo).map(([id,item])=>{const value=state.attributes[id];const grade=attributeGrade(value);return `<article class="attribute-card"><div class="attribute-symbol">${item.icon}</div><div><span>${item.label}</span><b>${value} · ${grade}</b><div class="attribute-track"><i style="width:${value%25/25*100}%"></i></div><small>${item.description}</small></div></article>`}).join('');
   const skillHtml=['Power','Endurance','Resolve'].map(path=>`<section class="skill-path"><div class="skill-path-head"><span>${path.toUpperCase()} PATH</span></div>${Object.entries(skills).filter(([,skill])=>skill.path===path).map(([id,skill])=>{const owned=Boolean(state.skills[id]);const available=level()>=skill.level&&(!skill.requires||state.skills[skill.requires]);return `<button class="skill-node ${owned?'unlocked':available?'available':'locked'}" data-skill="${id}" ${owned||!available||availableSkillPoints()<1?'disabled':''}><i>${skill.icon}</i><span><b>${skill.name}</b><small>${skill.description}</small><em>${owned?'UNLOCKED':level()<skill.level?`LEVEL ${skill.level}`:availableSkillPoints()? '1 SKILL POINT':'NO POINTS'}</em></span></button>`}).join('')}</section>`).join('');
-  const historyHtml=state.history.length?state.history.slice(0,20).map(h=>`<div class="history-row"><time>${new Date(h.date).toLocaleDateString(undefined,{month:'short',day:'numeric'})}</time><b>Strength Quest ${h.routine}${h.finisherCompleted?' · Finisher':''}</b><span>+${100+(h.finisherCompleted?10:0)} XP</span></div>`).join(''):`<div class="empty">Your completed workouts will appear here.</div>`;
+  const historyHtml=state.history.length?state.history.slice(0,20).map(h=>`<div class="history-row ${h.note?'has-note':''}"><time>${new Date(h.date).toLocaleDateString(undefined,{month:'short',day:'numeric'})}</time><b>Strength Quest ${h.routine}${h.finisherCompleted?' · Finisher':''}</b><span>+${100+(h.finisherCompleted?10:0)} XP</span>${h.note?`<p>“${esc(h.note)}”</p>`:''}</div>`).join(''):`<div class="empty">Your completed workouts will appear here.</div>`;
   const body=progressTab==='attributes'?`<div class="section-head"><h2>Hunter attributes</h2><span>Permanent growth</span></div><div class="attribute-list">${attributeHtml}</div>`:progressTab==='achievements'?`<div class="section-head"><h2>Achievements</h2><span>${unlocked}/${all.length} unlocked</span></div>${achievementHtml}`:progressTab==='skills'?`<section class="skill-summary"><div><span>AVAILABLE POINTS</span><b>${availableSkillPoints()}</b></div><p>Earn one Skill Point every five levels. Skills improve convenience and presentation—never free workout XP.</p><button class="text-button" data-reset-skills ${skillPointsSpent()?'':'disabled'}>RESET SKILL TREE</button></section>${skillHtml}`:`<div class="section-head"><h2>Quest history</h2><span>Newest first</span></div>${historyHtml}`;
   return shell(`<h1 class="page-title">Progress</h1><p class="page-sub">Attributes, achievements and choices forged through activity.</p><div class="subtabs">${[['attributes','Attributes'],['achievements','Awards'],['skills','Skills'],['history','History']].map(([id,label])=>`<button class="${progressTab===id?'active':''}" data-progress-tab="${id}">${label}</button>`).join('')}</div>${body}`);
 }
@@ -657,13 +660,14 @@ function settings(){
   <div class="settings-card"><h3>Workout equipment</h3><p class="settings-note equipment-help">Your next quest uses only equipment from this program.</p><div class="mode-grid">${modes}</div></div>
   <div class="settings-card"><h3>Quest difficulty</h3><p class="settings-note equipment-help">Changes sets, repetitions, exercise variations and suggested starting weights. Exercise feedback then adapts future targets. Always prioritise safe form.</p><div class="mode-grid">${difficulties}</div></div>
   <div class="settings-card"><h3>Interface theme</h3><p class="settings-note equipment-help">New visual styles unlock as your Hunter reaches Level 100.</p><div class="theme-grid">${themes}</div></div>
+  <div class="settings-card setting-row"><div><h3>Region atmosphere</h3><p class="settings-note">Adds subtle region backgrounds and decorative accents without replacing your selected theme.</p></div><button class="toggle ${state.regionAtmosphere?'on':''}" data-region-atmosphere role="switch" aria-checked="${state.regionAtmosphere}"><span></span></button></div>
   <div class="settings-card setting-row"><div><h3>Quest sounds</h3><p class="settings-note">Set confirmations, quests, levels and achievements.</p></div><button class="toggle ${state.soundEnabled?'on':''}" data-sound role="switch" aria-checked="${state.soundEnabled}"><span></span></button></div>
   <div class="settings-card"><h3>How Ascension works</h3><p class="settings-note equipment-help">Replay the guide to the Hunter dashboard, Quest Board, attributes, Inventory, Realm and backups.</p><button class="secondary" data-tutorial>OPEN TUTORIAL</button></div>
   <div class="settings-card"><h3>Progression rules</h3><p class="settings-note">XP requirements rise by 20 every 10 levels, from 200 XP to a permanent 400 XP cap. Activity also develops Hunter attributes, every five levels grants a Skill Point, and milestone chests contain cosmetic or convenience items. Home targets adapt to difficulty feedback; optional finishers add 10 XP.</p></div>
   <div class="settings-card"><h3>Backup</h3><div class="button-row"><button class="secondary" data-export>Export data</button><button class="secondary" data-import>Import data</button></div><input type="file" id="file" accept="application/json" hidden /></div>
   <div class="settings-card"><h3>Start over</h3><button class="secondary danger" data-reset>Reset all progress</button></div>`);
 }
-function applyTheme(){document.documentElement.dataset.theme=state.theme;}
+function applyTheme(){document.documentElement.dataset.theme=state.theme;document.documentElement.dataset.regionAtmosphere=state.regionAtmosphere?'on':'off';document.documentElement.dataset.region=`region-${regions.indexOf(currentRegion())+1}`;}
 function render(){ applyTheme();document.querySelector('#app').innerHTML=page==='home'?home():page==='workout'?workout():page==='progress'?progress():page==='realm'?realm():page==='inventory'?inventory():settings(); bind(); }
 function toast(msg){ const el=document.querySelector('#toast'); if(!el)return; el.textContent=msg; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),1800); }
 function bind(){
@@ -688,6 +692,7 @@ function bind(){
   document.querySelector('[data-boss-claim]')?.addEventListener('click',claimBoss);
   document.querySelector('[data-encounter]')?.addEventListener('click',completeEncounter);
   document.querySelector('[data-dismiss-reward]')?.addEventListener('click',()=>{state.lastReward=null;save();render()});
+  document.querySelector('[data-save-note]')?.addEventListener('click',saveWorkoutNote);
   document.querySelector('[data-open-chest]')?.addEventListener('click',openChest);
   document.querySelectorAll('[data-equip-item]').forEach(b=>b.onclick=()=>equipItem(b.dataset.equipItem));
   document.querySelectorAll('[data-skill]').forEach(b=>b.onclick=()=>unlockSkill(b.dataset.skill));
@@ -696,6 +701,7 @@ function bind(){
   document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{state.equipmentMode=b.dataset.mode;state.draft=null;save();render();toast(`${equipmentModes[state.equipmentMode].label} quests selected`)});
   document.querySelectorAll('[data-difficulty]').forEach(b=>b.onclick=()=>{state.difficulty=b.dataset.difficulty;state.draft=null;save();render();toast(`${difficultyModes[state.difficulty].label} difficulty selected`)});
   document.querySelectorAll('[data-theme-choice]').forEach(b=>b.onclick=()=>{const id=b.dataset.themeChoice;if(level()<themeModes[id].level)return;state.theme=id;save();render();toast(`${themeModes[id].label} theme equipped`)});
+  document.querySelector('[data-region-atmosphere]')?.addEventListener('click',()=>{state.regionAtmosphere=!state.regionAtmosphere;save();render();toast(state.regionAtmosphere?'Region atmosphere enabled':'Region atmosphere disabled')});
   document.querySelector('[data-sound]')?.addEventListener('click',()=>{state.soundEnabled=!state.soundEnabled;save();render();if(state.soundEnabled)playSound('set');toast(state.soundEnabled?'Quest sounds enabled':'Quest sounds disabled')});
   document.querySelector('[data-tutorial]')?.addEventListener('click',()=>showTutorial(true));
   document.querySelector('[data-save-name]')?.addEventListener('click',()=>{state.name=document.querySelector('#name').value.trim();save();render();toast(state.name?'Hunter name saved':'Hunter name cleared')});
@@ -708,6 +714,9 @@ function completeRecovery(){
   if(state.recoveryDate===localDay()) return;
   const before=progressSnapshot();
   state.recoveryDate=localDay(); state.recoveryCount++;state.xp+=20;addAttribute('endurance',1);addAttribute('vitality',1);state.lastReward={icon:'☾',title:'Recovery Walk completed',detail:'+20 XP · +1 Endurance · +1 Vitality'};save();render();playSound('quest');toast('Recovery complete · +20 XP');queueProgressRewards(before);
+}
+function saveWorkoutNote(){
+  const field=document.querySelector('#workout-note');if(!field||!state.lastReward?.historyDate)return;const record=state.history.find(item=>item.date===state.lastReward.historyDate);if(!record)return;record.note=field.value.trim().slice(0,280);save();render();toast(record.note?'Workout note saved':'Workout note cleared');
 }
 function completeSideQuest(){
   if(state.sideQuestDate===localDay())return;
@@ -734,11 +743,11 @@ function finish(){
   });
   const setsConfirmed=state.draft.exercises.reduce((sum,exercise)=>sum+exercise.sets.filter(Boolean).length,0);
   const finisherCompleted=state.equipmentMode==='home'&&Boolean(state.draft.finisherDone);const earnedXp=100+(finisherCompleted?10:0);
-  state.history.unshift({date:now.toISOString(),routine:state.routine,equipmentMode:state.equipmentMode,difficulty:state.difficulty,warmupCompleted:Boolean(state.draft.warmupDone),finisherCompleted,setsConfirmed}); state.lastWorkout=now.toISOString(); state.workoutCount++; state.xp+=earnedXp;
+  const completedAt=now.toISOString();state.history.unshift({date:completedAt,routine:state.routine,equipmentMode:state.equipmentMode,difficulty:state.difficulty,warmupCompleted:Boolean(state.draft.warmupDone),finisherCompleted,setsConfirmed,note:''}); state.lastWorkout=completedAt; state.workoutCount++; state.xp+=earnedXp;
   addAttribute('strength',3);addAttribute('discipline',1);if(finisherCompleted)addAttribute('endurance',1);if(state.workoutCount%3===0)addAttribute('vitality',1);
   state.chestProgress=(state.chestProgress||0)+1;let chestEarned=false;if(state.chestProgress>=3){state.chestProgress-=3;state.chests++;chestEarned=true;}
   if(state.workoutCount===10)addItem('vanguardRing');
-  state.lastReward={icon:'⚔',title:`Strength Quest ${state.routine} completed`,detail:`+${earnedXp} XP · +3 Strength · +1 Discipline${finisherCompleted?' · +1 Endurance':''}${chestEarned?' · Common Cache earned':''}`};
+  state.lastReward={icon:'⚔',title:`Strength Quest ${state.routine} completed`,detail:`+${earnedXp} XP · +3 Strength · +1 Discipline${finisherCompleted?' · +1 Endurance':''}${chestEarned?' · Common Cache earned':''}`,historyDate:completedAt};
   state.routine=routineOrder[(routineOrder.indexOf(state.routine)+1)%routineOrder.length]; state.draft=null; swapOpen=null; save(); page='workout'; render(); playSound('quest'); toast(`Quest complete · +${earnedXp} XP`); queueProgressRewards(before);
 }
 function openChest(){
@@ -802,6 +811,18 @@ function showWelcome(){
   setTimeout(()=>{welcome.classList.add('departing');setTimeout(()=>{welcome.remove();if(state.onboardingComplete)showTutorial();else showOnboarding()},650)},1800);
 }
 
+let refreshingForUpdate=false;
+function showUpdateBanner(worker){
+  if(document.querySelector('.update-banner'))return;const banner=document.createElement('aside');banner.className='update-banner';banner.innerHTML=`<div><i>✦</i><span><b>Ascension update ready</b><small>Refresh to activate the newest version. Your saved progress will remain.</small></span></div><div><button data-update-later>LATER</button><button data-update-now>REFRESH NOW</button></div>`;document.body.appendChild(banner);requestAnimationFrame(()=>banner.classList.add('visible'));banner.querySelector('[data-update-later]').onclick=()=>banner.remove();banner.querySelector('[data-update-now]').onclick=()=>{refreshingForUpdate=true;worker.postMessage({type:'SKIP_WAITING'})};
+}
+function registerServiceWorker(){
+  navigator.serviceWorker.register('./sw.js').then(registration=>{
+    if(registration.waiting&&navigator.serviceWorker.controller)showUpdateBanner(registration.waiting);
+    registration.addEventListener('updatefound',()=>{const worker=registration.installing;if(!worker)return;worker.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller)showUpdateBanner(registration.waiting||worker)})});
+    navigator.serviceWorker.addEventListener('controllerchange',()=>{if(refreshingForUpdate)location.reload()});
+  }).catch(()=>{});
+}
+
 render();
 showWelcome();
-if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'));
+if('serviceWorker' in navigator) window.addEventListener('load',registerServiceWorker);
