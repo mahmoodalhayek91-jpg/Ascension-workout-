@@ -207,7 +207,7 @@ const bossLore = {
 };
 function activeRoutines(){ return equipmentModes[state.equipmentMode].routines; }
 
-const initial = { name: '', xp: 0, xpSystemVersion:2, rpgSystemVersion:1, streak: 0, lastWorkout: null, workoutCount: 0, routine: 'A', equipmentMode: 'home', difficulty: 'beginner', theme: 'shadow', regionAtmosphere:true, soundEnabled: false, onboardingComplete: false, tutorialComplete:false, eternalCelebrated:false, history: [], bests: {}, exerciseAdjustments:{}, draft: null, recoveryDate: null, recoveryCount: 0, sideQuestDate:null, sideQuestCount:0, bossClaims:{}, bossWins:0, attributes:{strength:0,endurance:0,vitality:0,agility:0,discipline:0}, inventory:{}, chests:0, chestsOpened:0, chestProgress:0, equipped:{sigil:null,charm:null,aura:null,relic:null}, skills:{}, encounterDate:null, bossArchive:{}, shardsSpent:0, eternalPurchases:[], lastReward:null };
+const initial = { name: '', xp: 0, xpSystemVersion:2, rpgSystemVersion:1, streak: 0, lastWorkout: null, workoutCount: 0, routine: 'A', equipmentMode: 'home', difficulty: 'beginner', theme: 'shadow', soundEnabled: false, onboardingComplete: false, tutorialComplete:false, eternalCelebrated:false, history: [], bests: {}, exerciseAdjustments:{}, draft: null, recoveryDate: null, recoveryCount: 0, sideQuestDate:null, sideQuestCount:0, bossClaims:{}, bossWins:0, attributes:{strength:0,endurance:0,vitality:0,agility:0,discipline:0}, inventory:{}, chests:0, chestsOpened:0, chestProgress:0, equipped:{sigil:null,charm:null,aura:null,relic:null}, skills:{}, encounterDate:null, bossArchive:{}, shardsSpent:0, eternalPurchases:[], lastReward:null };
 let state = load();
 let page = 'home';
 let progressTab = 'attributes';
@@ -250,7 +250,6 @@ function normalizeRpgState(record,stored={}){
   if(!record.skills||typeof record.skills!=='object')record.skills={};
   if(!record.bossArchive||typeof record.bossArchive!=='object')record.bossArchive={};
   if(!Array.isArray(record.eternalPurchases))record.eternalPurchases=[];
-  if(typeof record.regionAtmosphere!=='boolean')record.regionAtmosphere=true;
   if(Array.isArray(record.history))record.history.forEach(item=>{if(typeof item.note!=='string')item.note='';});
   ['chests','chestsOpened','chestProgress','shardsSpent'].forEach(key=>record[key]=Math.max(0,Number(record[key])||0));
   if(stored.rpgSystemVersion===undefined){
@@ -660,14 +659,13 @@ function settings(){
   <div class="settings-card"><h3>Workout equipment</h3><p class="settings-note equipment-help">Your next quest uses only equipment from this program.</p><div class="mode-grid">${modes}</div></div>
   <div class="settings-card"><h3>Quest difficulty</h3><p class="settings-note equipment-help">Changes sets, repetitions, exercise variations and suggested starting weights. Exercise feedback then adapts future targets. Always prioritise safe form.</p><div class="mode-grid">${difficulties}</div></div>
   <div class="settings-card"><h3>Interface theme</h3><p class="settings-note equipment-help">New visual styles unlock as your Hunter reaches Level 100.</p><div class="theme-grid">${themes}</div></div>
-  <div class="settings-card setting-row"><div><h3>Region atmosphere</h3><p class="settings-note">Adds subtle region backgrounds and decorative accents without replacing your selected theme.</p></div><button class="toggle ${state.regionAtmosphere?'on':''}" data-region-atmosphere role="switch" aria-checked="${state.regionAtmosphere}"><span></span></button></div>
   <div class="settings-card setting-row"><div><h3>Quest sounds</h3><p class="settings-note">Set confirmations, quests, levels and achievements.</p></div><button class="toggle ${state.soundEnabled?'on':''}" data-sound role="switch" aria-checked="${state.soundEnabled}"><span></span></button></div>
   <div class="settings-card"><h3>How Ascension works</h3><p class="settings-note equipment-help">Replay the guide to the Hunter dashboard, Quest Board, attributes, Inventory, Realm and backups.</p><button class="secondary" data-tutorial>OPEN TUTORIAL</button></div>
   <div class="settings-card"><h3>Progression rules</h3><p class="settings-note">XP requirements rise by 20 every 10 levels, from 200 XP to a permanent 400 XP cap. Activity also develops Hunter attributes, every five levels grants a Skill Point, and milestone chests contain cosmetic or convenience items. Home targets adapt to difficulty feedback; optional finishers add 10 XP.</p></div>
   <div class="settings-card"><h3>Backup</h3><div class="button-row"><button class="secondary" data-export>Export data</button><button class="secondary" data-import>Import data</button></div><input type="file" id="file" accept="application/json" hidden /></div>
   <div class="settings-card"><h3>Start over</h3><button class="secondary danger" data-reset>Reset all progress</button></div>`);
 }
-function applyTheme(){document.documentElement.dataset.theme=state.theme;document.documentElement.dataset.regionAtmosphere=state.regionAtmosphere?'on':'off';document.documentElement.dataset.region=`region-${regions.indexOf(currentRegion())+1}`;}
+function applyTheme(){document.documentElement.dataset.theme=state.theme;}
 function render(){ applyTheme();document.querySelector('#app').innerHTML=page==='home'?home():page==='workout'?workout():page==='progress'?progress():page==='realm'?realm():page==='inventory'?inventory():settings(); bind(); }
 function toast(msg){ const el=document.querySelector('#toast'); if(!el)return; el.textContent=msg; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),1800); }
 function bind(){
@@ -701,7 +699,6 @@ function bind(){
   document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{state.equipmentMode=b.dataset.mode;state.draft=null;save();render();toast(`${equipmentModes[state.equipmentMode].label} quests selected`)});
   document.querySelectorAll('[data-difficulty]').forEach(b=>b.onclick=()=>{state.difficulty=b.dataset.difficulty;state.draft=null;save();render();toast(`${difficultyModes[state.difficulty].label} difficulty selected`)});
   document.querySelectorAll('[data-theme-choice]').forEach(b=>b.onclick=()=>{const id=b.dataset.themeChoice;if(level()<themeModes[id].level)return;state.theme=id;save();render();toast(`${themeModes[id].label} theme equipped`)});
-  document.querySelector('[data-region-atmosphere]')?.addEventListener('click',()=>{state.regionAtmosphere=!state.regionAtmosphere;save();render();toast(state.regionAtmosphere?'Region atmosphere enabled':'Region atmosphere disabled')});
   document.querySelector('[data-sound]')?.addEventListener('click',()=>{state.soundEnabled=!state.soundEnabled;save();render();if(state.soundEnabled)playSound('set');toast(state.soundEnabled?'Quest sounds enabled':'Quest sounds disabled')});
   document.querySelector('[data-tutorial]')?.addEventListener('click',()=>showTutorial(true));
   document.querySelector('[data-save-name]')?.addEventListener('click',()=>{state.name=document.querySelector('#name').value.trim();save();render();toast(state.name?'Hunter name saved':'Hunter name cleared')});
