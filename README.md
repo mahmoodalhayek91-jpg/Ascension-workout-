@@ -1,5 +1,7 @@
 # Ascension Workout
 
+The current build includes a two-part dynamic warm-up, automatic 30-second rests between sets, 40-second transitions between exercises, permanent cosmetic collectibles, and a rare permanent Abyssal Key that unlocks a hidden Boss encounter.
+
 An original RPG-inspired progressive workout tracker built as an installable iPhone web app.
 
 ## Progression
