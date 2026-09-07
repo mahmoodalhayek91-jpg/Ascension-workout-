@@ -1,6 +1,6 @@
 # Ascension Workout
 
-The current build includes a two-part dynamic warm-up, automatic 30-second rests between sets, 40-second transitions between exercises, permanent cosmetic collectibles, and a rare permanent Abyssal Key that unlocks a hidden Boss encounter.
+The current build includes a two-part dynamic warm-up, automatic 30-second rests between sets, 40-second transitions between exercises, rotating progressive Core Quests, an organized expandable Quest Board, permanent cosmetic collectibles, and a rare permanent Abyssal Key that unlocks a hidden Boss encounter.
 
 An original RPG-inspired progressive workout tracker built as an installable iPhone web app.
 
@@ -8,12 +8,14 @@ An original RPG-inspired progressive workout tracker built as an installable iPh
 
 - Six strength quests rotate from A through F after completion.
 - Beginner, Intermediate, and Advanced modes adjust sets, reps or time, and suggested starting weights.
-- Every strength quest begins with an optional guided warm-up.
+- Every strength quest begins with an optional two-part guided warm-up.
+- Core Quests A–C rotate through stability, abdominal strength, and side-core control. Up to three can be completed per week for 30 XP each.
+- The Quest Board uses expandable Main, Supplementary, and Boss sections to keep smaller screens organized.
 - Exercises can be replaced with suitable alternatives from the selected Home or Gym library.
 - Confirming all sets awards 100 XP.
 - The Recovery Walk starts at 10 minutes, gains 5 minutes every 10 levels, and caps at 45 minutes.
 - Recovery can be confirmed once per day for 20 XP.
-- Thirty-three achievements track strength quests, levels, streaks, recovery walks, and Weekly Boss victories.
+- Forty-four achievements track strength quests, Core Quests, levels, streaks, recovery walks, and Boss victories.
 - Settings lets each user switch between Home equipment (dumbbells, barbell, bench and bodyweight) and a fully equipped Gym program.
 - New users receive a Hunter setup screen; every level and newly unlocked achievement receives a celebration.
 - Optional synthesized quest sounds can be enabled in Settings.
