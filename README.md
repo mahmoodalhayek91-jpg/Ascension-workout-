@@ -23,7 +23,7 @@ An original RPG-inspired progressive workout tracker built as an installable iPh
 - Every workout exercise includes offline setup, movement, form-cue, and common-mistake guidance.
 - Twelve interface themes unlock progressively from Level 1 through Level 100. Level 50–100 themes add lightweight ambient animation.
 - Animation intensity can be Full, Reduced, or Off. Motion also pauses during workouts, rest timers, background use, and when the device requests reduced motion.
-- Every theme can be previewed before it is equipped, including locked themes.
+- Settings includes a persistent English/Arabic language selector with a complete right-to-left Arabic layout.
 - Hunter titles advance automatically at level milestones and appear on the opening screen and profile.
 - One optional Daily Side Quest rotates each day and awards 15 XP.
 - The layered SVG Hunter emblem evolves at Levels 1, 10, 25, 50, 75 and 100, with a permanent emblem collection in Settings.
